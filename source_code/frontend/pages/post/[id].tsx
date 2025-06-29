@@ -1,12 +1,9 @@
 // src/app/post/[id]/page.tsx
-import { mockPosts } from '../../../data/mockPosts';
-
-type Props = {
-    params: { id: string };
-};
-
-export default function PostDetail({ params }: Props) {
-    const post = mockPosts.find((p) => p.id === params.id);
+import { mockPosts } from '../../data/mockPosts';
+import { useRouter } from 'next/router';
+export default function PostDetail() {
+    const { id } = useRouter().query;
+    const post = mockPosts.find((p) => p.id === id);
 
     if (!post) return <p>Post not found</p>;
 

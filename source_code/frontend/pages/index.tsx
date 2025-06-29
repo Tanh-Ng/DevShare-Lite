@@ -1,4 +1,4 @@
-// src/app/page.tsx
+// pages/index.tsx
 import { mockPosts } from '../data/mockPosts';
 import PostCard from '../components/PostCard';
 
