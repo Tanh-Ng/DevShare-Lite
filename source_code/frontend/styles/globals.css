@@ -52,3 +52,10 @@ body {
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
 }
+
+.ProseMirror {
+  outline: none;
+  min-height: 300px;
+  font-size: 1rem;
+  line-height: 1.75;
+}
