@@ -59,3 +59,16 @@ body {
   font-size: 1rem;
   line-height: 1.75;
 }
+
+.btn {
+  padding: 6px 12px;
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: hsl(var(--accent));
+}
