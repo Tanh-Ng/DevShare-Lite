@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, UseGuards, Req, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, UseGuards, Req, Post,Put } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { JwtAuthGuard } from '../strategies/jwt-auth.guard';
 import { Request } from 'express';
@@ -58,6 +58,17 @@ export class UsersController {
       username: user.username,
     };
   }
-
+  @UseGuards(JwtAuthGuard)
+  @Put('me/bio')
+  async updateBio(@Req() req, @Body() body: { bio: string }) {
+    const updated = await this.usersService.updateBio(req.user.userId, body.bio);
+    if (!updated) {
+      return { message: 'User not found or bio update failed' };
+    }
+    return {
+      message: 'Cập nhật bio thành công',
+      bio: updated.bio,
+    };
+  }
 
 }

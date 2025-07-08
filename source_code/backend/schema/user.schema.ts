@@ -19,6 +19,9 @@ export class User {
 
   @Prop({ default: '' })
   avatarUrl?: string;
+
+  @Prop({ default: () => new Date() })
+  joined: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

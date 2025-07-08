@@ -1,11 +1,12 @@
+// pages/profile.tsx
 import Image from 'next/image';
 import { useCurrentUser } from '../hooks/useCurrentUser';
+import ProfileInfo from '../components/ProfileInfo';
 
 export default function ProfilePage() {
   const { user, loading } = useCurrentUser();
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (!user) return <p className="text-center mt-10 text-red-500">Chưa đăng nhập</p>;
+  if (loading || !user) return null;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -23,13 +24,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="bg-muted p-4 rounded-lg border border-border space-y-2">
-        <h2 className="font-semibold text-lg text-primary">About</h2>
-        <p className="text-sm text-muted-foreground">{user.bio || 'Chưa có giới thiệu.'}</p>
-        <p className="text-xs text-muted-foreground">
-          Joined: <span className="font-medium">{user.joined || 'N/A'}</span>
-        </p>
-      </div>
+      <ProfileInfo user={user} />
     </div>
   );
 }

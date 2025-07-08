@@ -10,7 +10,7 @@ export class UsersService {
 
   async create(email: string, password: string, username?: string): Promise<UserDocument> {
     const hashed = await bcrypt.hash(password, 10);
-    const user = new this.userModel({ email, password: hashed,username });
+    const user = new this.userModel({ email, password: hashed, username });
     return user.save();
   }
 
@@ -24,5 +24,13 @@ export class UsersService {
 
   async findAll(): Promise<UserDocument[]> {
     return this.userModel.find().select('-password');
+  }
+
+  async updateBio(userId: string, bio: string): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { bio },
+      { new: true } 
+    );
   }
 }
