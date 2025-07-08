@@ -4,11 +4,8 @@ import { ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 
 async function bootstrap() {
-    dotenv.config(); // Load biến môi trường từ .env nếu có
-
+    dotenv.config();
     const app = await NestFactory.create(AppModule);
-
-    // Bật global validation (tự động validate DTO)
     app.useGlobalPipes(new ValidationPipe());
 
     const port = process.env.PORT || 3000;
