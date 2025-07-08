@@ -11,11 +11,12 @@ import { JwtStrategy } from '../strategies/jwt.strategy';
     UsersModule,
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'default-secret', // nên dùng biến môi trường
+      secret: process.env.JWT_SECRET || 'default-secret',
       signOptions: { expiresIn: '1d' },
     }),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
+  exports: [JwtModule],
 })
-export class AuthModule {}
+export class AuthModule { }

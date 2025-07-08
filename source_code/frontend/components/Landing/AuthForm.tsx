@@ -9,6 +9,7 @@ interface AuthFormProps {
 export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps) {
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const [username, setUsername] = useState(''); // <-- thêm username
     const [password, setPassword] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -18,17 +19,27 @@ export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps)
             ? 'http://localhost:3000/auth/login'
             : 'http://localhost:3000/users/register';
 
+        const payload = isLoginMode
+            ? { email, password }
+            : { email, password, username };
+
         const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify(payload),
         });
 
         const data = await res.json();
 
-        if (res.ok && data.access_token) {
-            localStorage.setItem('token', data.access_token);
-            router.push('/home');
+        if (res.ok && (data.access_token || data.user)) {
+            // Nếu là đăng ký, backend của bạn chưa trả về token → chuyển đến login
+            if (isLoginMode) {
+                localStorage.setItem('token', data.access_token);
+                router.push('/home');
+            } else {
+                alert('Đăng ký thành công, vui lòng đăng nhập!');
+                setIsLoginMode(true);
+            }
         } else {
             alert(data.message || 'Đăng nhập/Đăng ký thất bại!');
         }
@@ -42,6 +53,16 @@ export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps)
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {!isLoginMode && (
+                        <input
+                            type="text"
+                            required
+                            placeholder="Tên người dùng"
+                            className="w-full px-4 py-2 border border-gray-300 rounded"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                    )}
                     <input
                         type="email"
                         required

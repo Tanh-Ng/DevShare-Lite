@@ -6,11 +6,11 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
 
-  async create(email: string, password: string): Promise<UserDocument> {
+  async create(email: string, password: string, username?: string): Promise<UserDocument> {
     const hashed = await bcrypt.hash(password, 10);
-    const user = new this.userModel({ email, password: hashed });
+    const user = new this.userModel({ email, password: hashed,username });
     return user.save();
   }
 

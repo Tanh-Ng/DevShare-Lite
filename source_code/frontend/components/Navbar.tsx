@@ -4,12 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  const username = "User123";
+  const { user, loading } = useCurrentUser();
   const router = useRouter();
 
   return (
@@ -69,7 +69,7 @@ export default function Navbar() {
             {isProfileOpen && (
               <div className="absolute left-0 mt-2 w-48 bg-white border border-border rounded-md shadow-lg z-50 text-sm text-foreground">
                 <div className="px-4 py-2 border-b border-border font-semibold">
-                  {username}
+                  {user.username || user.email}
                 </div>
                 <Link href="/profile" className="block px-4 py-2 hover:bg-muted">
                   Profile
@@ -79,8 +79,8 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={() => {
-                    localStorage.removeItem('token'); 
-                    router.push('/');          
+                    localStorage.removeItem('token');
+                    router.push('/');
                   }}
                   className="w-full text-left px-4 py-2 hover:bg-muted"
                 >
