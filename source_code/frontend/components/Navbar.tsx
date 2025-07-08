@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const username = "User123"; // You can replace with real user data later
+  const username = "User123";
+  const router = useRouter();
 
   return (
     <header className="bg-background border-b border-border relative z-50">
@@ -76,7 +78,10 @@ export default function Navbar() {
                   Your Posts
                 </Link>
                 <button
-                  onClick={() => alert('Sign out')}
+                  onClick={() => {
+                    localStorage.removeItem('token'); 
+                    router.push('/');          
+                  }}
                   className="w-full text-left px-4 py-2 hover:bg-muted"
                 >
                   Sign Out
