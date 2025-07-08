@@ -2,13 +2,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Post, PostDocument } from '../models/post.schema';
+import { Post, PostDocument } from '../schema/post.schema';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(Post.name) private postModel: Model<PostDocument>,
-  ) {}
+  ) { }
 
   async create(data: Partial<Post>) {
     return new this.postModel(data).save();
