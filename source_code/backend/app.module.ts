@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { PostsModule } from './modules/post.module';
 import { UsersModule } from 'modules/user.module';
 import { AuthModule } from 'modules/auth.module';
+import { CloudinaryModule } from './modules/cloudinary.module';
+import { UploadController } from './controllers/upload.controller';
 
 @Module({
   imports: [
@@ -15,9 +17,10 @@ import { AuthModule } from 'modules/auth.module';
     MongooseModule.forRoot(process.env.MONGO_URI || ''),
     PostsModule,
     UsersModule,
-    AuthModule
+    AuthModule,
+    CloudinaryModule
   ],
-  controllers: [AppController],
+  controllers: [AppController,UploadController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

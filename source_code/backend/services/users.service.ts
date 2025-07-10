@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../schema/user.schema';
+import { User, UserDocument } from '../schemas/user.schema';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
@@ -30,7 +30,7 @@ export class UsersService {
     return this.userModel.findByIdAndUpdate(
       userId,
       { bio },
-      { new: true } 
+      { new: true }
     );
   }
 }
