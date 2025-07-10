@@ -1,29 +1,32 @@
-//controllers/posts.controller.ts
-import { Controller, Get, Post as HttpPost, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post as HttpPost, Body, Param, Patch } from '@nestjs/common';
 import { PostsService } from '../services/posts.service';
-import { Post } from '../schema/post.schema';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) { }
 
+  @HttpPost()
+  createPost(@Body() body: { title: string; content: string; authorId: string; coverImage?: string; }) {
+    return this.postsService.createPost(body.title, body.content, body.authorId, body.coverImage,);
+  }
+
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  getAllPosts() {
+    return this.postsService.getAllPosts();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findById(id);
+  getPost(@Param('id') id: string) {
+    return this.postsService.getPostById(id);
   }
 
-  @HttpPost()
-  create(@Body() body: Partial<Post>) {
-    return this.postsService.create(body);
+  @Patch(':id/like')
+  like(@Param('id') id: string, @Body() body: { userId: string }) {
+    return this.postsService.toggleLike(id, body.userId);
   }
 
-  @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.postsService.delete(id);
+  @Patch(':id/bookmark')
+  bookmark(@Param('id') id: string, @Body() body: { userId: string }) {
+    return this.postsService.toggleBookmark(id, body.userId);
   }
 }
