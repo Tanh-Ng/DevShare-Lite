@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '../hooks/useCurrentUser';
+import SearchBar from './SearchBar';
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,11 +26,7 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6 flex-1 justify-center">
           {/* Search Bar */}
           <div className="w-full max-w-md">
-            <input
-              type="text"
-              placeholder="Search posts..."
-              className="w-full px-3 py-2 rounded-md bg-muted text-foreground placeholder-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <SearchBar />
           </div>
         </div>
 

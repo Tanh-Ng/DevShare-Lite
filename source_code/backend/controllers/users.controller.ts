@@ -11,19 +11,27 @@ export class UsersController {
   async register(@Body() body: { email: string; password: string; username?: string }) {
     const existing = await this.usersService.findByEmail(body.email);
     if (existing) {
-      return { message: 'Email already exists' };
+      return { message: 'Email đã tồn tại' };
     }
 
-    const user = await this.usersService.create(body.email, body.password, body.username);
-    return {
-      message: 'Đăng ký thành công',
-      user: {
-        id: user._id,
-        email: user.email,
-        username: user.username ?? '',
+    try {
+      const user = await this.usersService.create(body.email, body.password, body.username);
+      return {
+        message: 'Đăng ký thành công',
+        user: {
+          id: user._id,
+          email: user.email,
+          username: user.username ?? '',
+        },
+      };
+    } catch (err: any) {
+      if (err.code === 11000 && err.keyPattern?.username) {
+        return { message: 'Username đã tồn tại' };
       }
-    };
+      return { message: 'Đăng ký thất bại. Vui lòng thử lại.' };
+    }
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Req() req: Request) {

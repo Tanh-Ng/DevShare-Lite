@@ -1,4 +1,4 @@
-import { Controller, Get, Post as HttpPost, Body, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post as HttpPost, Body, Param, Patch, Req, UseGuards, Query } from '@nestjs/common';
 import { PostsService } from '../services/posts.service';
 import { JwtAuthGuard } from '../strategies/jwt-auth.guard';
 import { Request } from 'express';
@@ -13,10 +13,15 @@ export class PostsController {
     @Req() req: Request,
     @Body() body: { title: string; content: string; coverImage?: string }
   ) {
-    const user = req.user as any; 
+    const user = req.user as any;
     return this.postsService.createPost(body.title, body.content, user.userId, body.coverImage);
   }
 
+  @Get('search')
+  async searchPosts(@Query('q') query: string) {
+    return this.postsService.searchPostsByTitle(query);
+  }
+  
   @Get()
   getAllPosts() {
     return this.postsService.getAllPosts();

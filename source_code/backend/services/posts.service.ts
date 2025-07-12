@@ -17,6 +17,14 @@ export class PostsService {
     });
   }
 
+  async searchPostsByTitle(query: string) {
+    if (!query) return [];
+
+    return this.postModel
+      .find({ title: { $regex: query, $options: 'i' } }) 
+      .select('title _id') 
+      .limit(5);
+  }
   async getAllPosts() {
     return this.postModel.find().populate('author', 'username avatarUrl');
   }
