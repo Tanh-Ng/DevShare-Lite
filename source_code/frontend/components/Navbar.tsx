@@ -61,15 +61,26 @@ export default function Navbar() {
           <div className="relative">
             <button
               onClick={() => setIsProfileOpen((prev) => !prev)}
-              className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-bold"
+              className="w-8 h-8 rounded-full overflow-hidden"
             >
-              U
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-bold">
+                  {(user?.username || 'U')[0].toUpperCase()}
+                </div>
+              )}
             </button>
+
 
             {isProfileOpen && (
               <div className="absolute left-0 mt-2 w-48 bg-white border border-border rounded-md shadow-lg z-50 text-sm text-foreground">
                 <div className="px-4 py-2 border-b border-border font-semibold">
-                  {user.username || user.email}
+                  {user ? user.username || user.email : ''}
                 </div>
                 <Link href="/profile" className="block px-4 py-2 hover:bg-muted">
                   Profile

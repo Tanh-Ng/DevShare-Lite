@@ -29,8 +29,17 @@ export default function PostDetailPage() {
     <div className="grid grid-cols-12 gap-6 max-w-screen-xl mx-auto mt-6 px-6">
       {/* Left Sidebar */}
       <aside className="col-span-2 sticky top-20 self-start space-y-4 border-r pr-4 text-sm text-gray-600">
-        <div>
-          <p className="font-medium">👤 {post.author?.name}</p>
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+          {post.author?.avatarUrl ? (
+            <img
+              src={post.author.avatarUrl}
+              alt={post.author.username}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gray-300" />
+          )}
+          <span>{post.author?.username || 'Unknown'}</span>
         </div>
         <div>❤️ {post.likes?.length ?? 0} likes</div>
         <div>🔖 {post.bookmarks?.length ?? 0} bookmarks</div>

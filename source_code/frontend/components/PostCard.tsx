@@ -10,7 +10,8 @@ type Post = {
     content: string;
     author: {
         _id: string;
-        name: string;
+        username: string;
+        avatarUrl?: string;
     };
     createdAt: string;
     views: number;
@@ -27,7 +28,18 @@ export default function PostCard({ post }: { post: Post }) {
             {/* Bên trái: nội dung bài viết */}
             <div className="flex-1">
                 {/* Tác giả */}
-                <p className="text-sm text-gray-500 mb-1">👤 {post.author?.name || 'Unknown'}</p>
+                <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                    {post.author?.avatarUrl ? (
+                        <img
+                            src={post.author.avatarUrl}
+                            alt={post.author.username}
+                            className="w-6 h-6 rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-6 h-6 rounded-full bg-gray-300" />
+                    )}
+                    <span>{post.author?.username || 'Unknown'}</span>
+                </div>
 
                 {/* Tiêu đề */}
                 <Link href={`/post/${post._id}`}>

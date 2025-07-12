@@ -18,7 +18,7 @@ export class PostsService {
   }
 
   async getAllPosts() {
-    return this.postModel.find().populate('author').exec();
+    return this.postModel.find().populate('author', 'username avatarUrl');
   }
 
   async getPostById(id: string) {
@@ -26,7 +26,7 @@ export class PostsService {
       id,
       { $inc: { views: 1 } },
       { new: true }
-    ).populate('author');
+    ).populate('author', 'username avatarUrl');
   }
 
 
