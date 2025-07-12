@@ -1,6 +1,7 @@
 // pages/post/[id].tsx
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { getCoverImageUrl } from '../../utils/cloudinary';
 import ReactMarkdown from 'react-markdown';
 
 export default function PostDetailPage() {
@@ -41,11 +42,18 @@ export default function PostDetailPage() {
       <main className="col-span-7">
         {/* Ảnh bìa */}
         {post.coverImage && (
-          <img
-            src={post.coverImage}
-            alt="Cover"
-            className="w-full h-64 object-cover rounded-lg mb-6 shadow"
-          />
+          <>
+            {console.log("Optimized Cover Image URL:", getCoverImageUrl(post.coverImage))}
+
+            <div className="w-full aspect-video overflow-hidden rounded-lg mb-6 shadow">
+              <img
+                src={getCoverImageUrl(post.coverImage)}
+                alt={post.title}
+                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+          </>
         )}
 
         {/* Tiêu đề */}

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-
+import { getAvatarImageUrl } from '../utils/cloudinary';
 export function AvatarUploader({
     avatarUrl,
     avatarPublicId,
@@ -58,7 +58,7 @@ export function AvatarUploader({
     return (
         <div className="relative w-20 h-20">
             <img
-                src={avatarUrl || '/avatar.png'}
+                src={getAvatarImageUrl(avatarUrl) || '/avatar.png'}
                 alt="Avatar"
                 className="w-full h-full object-cover rounded-full border"
             />

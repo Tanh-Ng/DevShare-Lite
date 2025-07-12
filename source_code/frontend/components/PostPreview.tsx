@@ -1,5 +1,5 @@
 'use client';
-
+import { getCoverImageUrl } from '../utils/cloudinary';
 import { useEffect, useState } from 'react';
 
 export default function PostPreview({
@@ -23,7 +23,7 @@ export default function PostPreview({
             <div className="border p-4 rounded-xl shadow-md">
                 {coverImage && (
                     <img
-                        src={coverImage}
+                        src={getCoverImageUrl(coverImage)}
                         alt="Preview"
                         className="w-full h-40 object-cover rounded mb-3"
                     />

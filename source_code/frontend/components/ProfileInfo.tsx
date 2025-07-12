@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BioEditor } from './BioEditor';
 import { AvatarUploader } from './AvatarUploader';
-
+import { getCoverImageUrl } from '../utils/cloudinary';
 interface ProfileInfoProps {
     user: {
         email: string;
