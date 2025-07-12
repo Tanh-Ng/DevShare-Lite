@@ -1,40 +1,33 @@
 // hooks/useCurrentUser.ts
 import { useEffect, useState } from 'react';
 
+interface User {
+    id: string;
+    email: string;
+    username: string;
+    bio?: string;
+    joined?: string;
+    avatarUrl?: string;
+    avatarPublicId?: string;
+}
+
 export function useCurrentUser() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchUser = async () => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            setLoading(false);
-            return;
-        }
+        const res = await fetch('http://localhost:3000/users/me', {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setUser(data); // data sẽ là kiểu User
+        setLoading(false);
+    };
 
-        fetch('http://localhost:3000/users/me', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-            .then(async (res) => {
-                if (!res.ok) {
-                    throw new Error('Failed to fetch user');
-                }
-                const data = await res.json();
-                console.log(' Dữ liệu user từ API:', data);
-                return data;
-            })
-            .then((data) => {
-                setUser(data);
-            })
-            .catch((err) => {
-                console.error(' Lỗi khi lấy user:', err);
-                setUser(null);
-                localStorage.removeItem('token');
-            })
-            .finally(() => setLoading(false));
+    useEffect(() => {
+        fetchUser();
     }, []);
 
-    return { user, loading };
+    return { user, loading, refresh: fetchUser };
 }

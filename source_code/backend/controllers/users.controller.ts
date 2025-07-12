@@ -24,22 +24,24 @@ export class UsersController {
       }
     };
   }
-
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Req() req: Request) {
-    console.log('Current user:', req.user);
     const user = req.user as any;
     const found = await this.usersService.findById(user.userId);
+
     if (!found) {
       return { message: 'User not found' };
     }
+
     return {
       id: found._id,
       email: found.email,
       username: found.username || '',
       bio: found.bio || '',
       avatarUrl: found.avatarUrl || '',
+      avatarPublicId: found.avatarPublicId || '',
+      joined: found.joined
     };
   }
 
