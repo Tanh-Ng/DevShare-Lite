@@ -8,6 +8,7 @@ import { UsersModule } from 'modules/user.module';
 import { AuthModule } from 'modules/auth.module';
 import { CloudinaryModule } from './modules/cloudinary.module';
 import { UploadController } from './controllers/upload.controller';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -15,12 +16,13 @@ import { UploadController } from './controllers/upload.controller';
       isGlobal: true,
     }),
     MongooseModule.forRoot(process.env.MONGO_URI || ''),
+    MulterModule.register(),
     PostsModule,
     UsersModule,
     AuthModule,
     CloudinaryModule
   ],
-  controllers: [AppController,UploadController],
+  controllers: [AppController, UploadController],
   providers: [AppService],
 })
 export class AppModule { }

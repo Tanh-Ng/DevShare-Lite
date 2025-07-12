@@ -13,6 +13,9 @@ export class Post extends Document {
   @Prop()
   coverImage?: string;
 
+  @Prop()
+  coverImagePublicId?: string;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   author: Types.ObjectId;
 

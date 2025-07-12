@@ -33,4 +33,15 @@ export class UsersService {
       { new: true }
     );
   }
+  async updateAvatar(
+    userId: string,
+    avatarUrl: string,
+    avatarPublicId: string
+  ): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { avatarUrl, avatarPublicId },
+      { new: true }
+    );
+  }
 }

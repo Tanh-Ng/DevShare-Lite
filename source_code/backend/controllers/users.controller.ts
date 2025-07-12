@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, UseGuards, Req, Post,Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, UseGuards, Req, Post, Put, Patch } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { JwtAuthGuard } from '../strategies/jwt-auth.guard';
 import { Request } from 'express';
@@ -69,6 +69,15 @@ export class UsersController {
       message: 'Cập nhật bio thành công',
       bio: updated.bio,
     };
+  }
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/avatar')
+  updateAvatar(
+    @Req() req: Request,
+    @Body() body: { avatarUrl: string; avatarPublicId: string }
+  ) {
+    const user = req.user as any;
+    return this.usersService.updateAvatar(user.userId, body.avatarUrl, body.avatarPublicId);
   }
 
 }

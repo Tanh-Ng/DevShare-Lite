@@ -29,4 +29,12 @@ export class PostsController {
   bookmark(@Param('id') id: string, @Body() body: { userId: string }) {
     return this.postsService.toggleBookmark(id, body.userId);
   }
+  @Patch(':id/cover')
+  async updateCoverImage(
+    @Param('id') id: string,
+    @Body() body: { coverImage: string; coverImagePublicId?: string }
+  ) {
+    return this.postsService.updateCoverImage(id, body.coverImage, body.coverImagePublicId);
+  }
+
 }

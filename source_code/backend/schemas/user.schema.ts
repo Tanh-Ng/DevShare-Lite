@@ -20,6 +20,9 @@ export class User {
   @Prop({ default: '' })
   avatarUrl?: string;
 
+  @Prop({ default: '' })
+  avatarPublicId?: string;
+
   @Prop({ default: () => new Date() })
   joined: Date;
 }

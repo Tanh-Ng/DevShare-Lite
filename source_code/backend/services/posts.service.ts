@@ -58,4 +58,13 @@ export class PostsService {
     return post.save();
   }
 
+  async updateCoverImage(postId: string, coverImage: string, coverImagePublicId?: string) {
+    return this.postModel.findByIdAndUpdate(
+      postId,
+      { coverImage, coverImagePublicId },
+      { new: true }
+    );
+  }
+
+
 }
