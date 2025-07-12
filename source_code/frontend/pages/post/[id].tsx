@@ -39,7 +39,19 @@ export default function PostDetailPage() {
 
       {/* Center content */}
       <main className="col-span-7">
+        {/* Ảnh bìa */}
+        {post.coverImage && (
+          <img
+            src={post.coverImage}
+            alt="Cover"
+            className="w-full h-64 object-cover rounded-lg mb-6 shadow"
+          />
+        )}
+
+        {/* Tiêu đề */}
         <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+
+        {/* Nội dung */}
         <div className="prose prose-lg max-w-none">
           <ReactMarkdown>{post.content}</ReactMarkdown>
         </div>

@@ -1,13 +1,20 @@
-import { Controller, Get, Post as HttpPost, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post as HttpPost, Body, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { PostsService } from '../services/posts.service';
+import { JwtAuthGuard } from '../strategies/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) { }
 
+  @UseGuards(JwtAuthGuard)
   @HttpPost()
-  createPost(@Body() body: { title: string; content: string; authorId: string; coverImage?: string; }) {
-    return this.postsService.createPost(body.title, body.content, body.authorId, body.coverImage,);
+  async createPost(
+    @Req() req: Request,
+    @Body() body: { title: string; content: string; coverImage?: string }
+  ) {
+    const user = req.user as any; 
+    return this.postsService.createPost(body.title, body.content, user.userId, body.coverImage);
   }
 
   @Get()
@@ -29,6 +36,7 @@ export class PostsController {
   bookmark(@Param('id') id: string, @Body() body: { userId: string }) {
     return this.postsService.toggleBookmark(id, body.userId);
   }
+
   @Patch(':id/cover')
   async updateCoverImage(
     @Param('id') id: string,
@@ -36,5 +44,4 @@ export class PostsController {
   ) {
     return this.postsService.updateCoverImage(id, body.coverImage, body.coverImagePublicId);
   }
-
 }

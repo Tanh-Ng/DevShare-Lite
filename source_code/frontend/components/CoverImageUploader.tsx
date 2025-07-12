@@ -21,7 +21,7 @@ export default function CoverImageUploader({ coverImage, setCoverImage }: Props)
 
     try {
       setUploading(true);
-      const res = await fetch('http://localhost:3000/upload', {
+      const res = await fetch('http://localhost:3000/upload/blogcover', {
         method: 'POST',
         body: formData,
       });

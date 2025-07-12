@@ -21,10 +21,34 @@ export default function WritePage() {
     content: '<p>Hãy bắt đầu viết câu chuyện của bạn...</p>',
   });
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const content = editor?.getHTML();
-    console.log({ title, coverImage, content });
-    // TODO: Gửi lên backend
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch('http://localhost:3000/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // JWT để xác thực
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          coverImage,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      alert(' Đăng bài thành công!');
+      // Ví dụ redirect về trang chi tiết bài viết
+      // router.push(`/posts/${data.id}`);
+    } catch (err) {
+      console.error(err);
+      alert('Có lỗi khi đăng bài');
+    }
   };
 
   return (
