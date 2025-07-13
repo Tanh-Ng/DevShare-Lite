@@ -9,6 +9,7 @@ interface User {
     joined?: string;
     avatarUrl?: string;
     avatarPublicId?: string;
+    bookmarkedPosts?: string[];
 }
 
 export function useCurrentUser() {

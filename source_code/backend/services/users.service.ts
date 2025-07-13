@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { Model, Types } from 'mongoose';
@@ -90,4 +90,29 @@ export class UsersService {
       isFollowing: !isFollowing,
     };
   }
+
+  async toggleBookmark(userId: string, postId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    const isBookmarked = user.bookmarkedPosts.some((id) =>
+      id.equals(postId)
+    );
+
+    if (isBookmarked) {
+      user.bookmarkedPosts = user.bookmarkedPosts.filter(
+        (id) => !id.equals(postId)
+      );
+    } else {
+      user.bookmarkedPosts.push(new Types.ObjectId(postId));
+    }
+
+    await user.save();
+
+    return {
+      isBookmarked: !isBookmarked,
+      bookmarkedCount: user.bookmarkedPosts.length,
+    };
+  }
+
 }

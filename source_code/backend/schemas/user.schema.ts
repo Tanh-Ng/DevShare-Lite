@@ -31,6 +31,9 @@ export class User {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   following: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Post' }], default: [] })
+  bookmarkedPosts: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

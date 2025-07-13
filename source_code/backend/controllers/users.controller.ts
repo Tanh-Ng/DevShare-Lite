@@ -52,6 +52,7 @@ export class UsersController {
       joined: found.joined,
       followers: user.followers ?? [],
       followersCount: user.followers?.length ?? 0,
+      bookmarkedPosts: found.bookmarkedPosts || [],
     };
   }
 
@@ -111,6 +112,17 @@ export class UsersController {
     const currentUserId = (req.user as any).userId;
     return this.usersService.toggleFollow(currentUserId, targetUserId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('bookmarks/:postId')
+  async toggleBookmark(
+    @Param('postId') postId: string,
+    @Req() req: Request
+  ) {
+    const currentUserId = (req.user as any).userId;
+    return this.usersService.toggleBookmark(currentUserId, postId);
+  }
+
 }
 
 
