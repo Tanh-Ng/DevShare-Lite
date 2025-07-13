@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -52,5 +52,42 @@ export class UsersService {
         { email: { $regex: regex } },
       ],
     }).select('_id username email avatarUrl');
+  }
+
+  async toggleFollow(currentUserId: string, targetUserId: string) {
+    if (currentUserId === targetUserId) {
+      throw new Error('Bạn không thể theo dõi chính mình');
+    }
+
+    const currentUser = await this.userModel.findById(currentUserId);
+    const targetUser = await this.userModel.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      throw new Error('User không tồn tại');
+    }
+
+    const isFollowing = currentUser.following.some(id =>
+      id.equals(targetUser._id as Types.ObjectId)
+    );
+
+    if (isFollowing) {
+      currentUser.following = currentUser.following.filter(
+        id => !id.equals(targetUser._id as Types.ObjectId),
+      );
+      targetUser.followers = targetUser.followers.filter(
+        id => !id.equals(currentUser._id as Types.ObjectId),
+      );
+    } else {
+      currentUser.following.push(targetUser._id as Types.ObjectId);
+      targetUser.followers.push(currentUser._id as Types.ObjectId);
+    }
+
+    await currentUser.save();
+    await targetUser.save();
+
+    return {
+      message: isFollowing ? 'Đã hủy theo dõi' : 'Đã theo dõi',
+      isFollowing: !isFollowing,
+    };
   }
 }

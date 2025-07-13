@@ -49,7 +49,9 @@ export class UsersController {
       bio: found.bio || '',
       avatarUrl: found.avatarUrl || '',
       avatarPublicId: found.avatarPublicId || '',
-      joined: found.joined
+      joined: found.joined,
+      followers: user.followers ?? [],
+      followersCount: user.followers?.length ?? 0,
     };
   }
 
@@ -73,7 +75,9 @@ export class UsersController {
       bio: user.bio || '',
       avatarUrl: user.avatarUrl || '',
       avatarPublicId: user.avatarPublicId || '',
-      joined: user.joined
+      joined: user.joined,
+      followers: user.followers ?? [],
+      followersCount: user.followers?.length ?? 0,
     };
   }
   @UseGuards(JwtAuthGuard)
@@ -98,6 +102,15 @@ export class UsersController {
     return this.usersService.updateAvatar(user.userId, body.avatarUrl, body.avatarPublicId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/follow')
+  async toggleFollow(
+    @Param('id') targetUserId: string,
+    @Req() req: Request,
+  ) {
+    const currentUserId = (req.user as any).userId;
+    return this.usersService.toggleFollow(currentUserId, targetUserId);
+  }
 }
 
 
