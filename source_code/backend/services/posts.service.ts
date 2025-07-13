@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from '../schemas/post.schema';
 import { Model, Types } from 'mongoose';
@@ -39,7 +39,7 @@ export class PostsService {
 
   async getPostsByAuthor(authorId: string) {
     return this.postModel
-      .find({ author: new Types.ObjectId(authorId) }) 
+      .find({ author: new Types.ObjectId(authorId) })
       .populate('author', 'username avatarUrl')
       .sort({ createdAt: -1 });
   }
@@ -81,5 +81,28 @@ export class PostsService {
     );
   }
 
+  async updatePost(
+    postId: string,
+    userId: string,
+    title?: string,
+    content?: string,
+    coverImage?: string,
+  ) {
+    const post = await this.postModel.findById(postId);
+
+    if (!post) {
+      throw new NotFoundException('Bài viết không tồn tại');
+    }
+
+    if (post.author.toString() !== userId) {
+      throw new ForbiddenException('Bạn không có quyền sửa bài viết này');
+    }
+
+    if (title !== undefined) post.title = title;
+    if (content !== undefined) post.content = content;
+    if (coverImage !== undefined) post.coverImage = coverImage;
+
+    return await post.save();
+  }
 
 }

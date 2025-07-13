@@ -56,4 +56,15 @@ export class PostsController {
   ) {
     return this.postsService.updateCoverImage(id, body.coverImage, body.coverImagePublicId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async updatePost(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @Body() body: { title?: string; content?: string; coverImage?: string }
+  ) {
+    const user = req.user as any;
+    return this.postsService.updatePost(id, user.userId, body.title, body.content, body.coverImage);
+  }
 }
