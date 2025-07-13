@@ -156,5 +156,8 @@ export class PostsService {
     return this.postModel.find().sort({ createdAt: -1 }).populate('author');
   }
 
+  async deletePost(postId: string) {
+    return this.postModel.findByIdAndDelete(postId);
+  }
 
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post as HttpPost, Body, Param, Patch, Req, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post as HttpPost, Body, Param, Patch, Req, UseGuards, Query, Delete, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PostsService } from '../services/posts.service';
 import { JwtAuthGuard } from '../strategies/jwt-auth.guard';
 import { Request } from 'express';
@@ -86,6 +86,28 @@ export class PostsController {
     const userId = req.user.userId;
     const result = await this.postsService.toggleStar(postId, userId);
     return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deletePost(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as any;
+
+    // Lấy bài viết
+    const post = await this.postsService.getPostById(id);
+    if (!post) {
+      throw new NotFoundException('Bài viết không tồn tại');
+    }
+
+    // Kiểm tra quyền: chỉ tác giả mới được xóa
+
+
+    if (post.author._id.toString() !== user.userId.toString()) {
+      throw new ForbiddenException('Bạn không có quyền xóa bài viết này');
+    }
+
+    // Thực hiện xóa
+    return this.postsService.deletePost(id);
   }
 
 }

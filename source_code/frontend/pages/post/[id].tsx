@@ -55,7 +55,7 @@ export default function PostDetailPage() {
         },
         body: JSON.stringify({
           content,
-          parentComment: parentCommentId || null,
+          parentCommentId: parentCommentId || null,
         }),
       });
 
@@ -126,6 +126,25 @@ export default function PostDetailPage() {
     return <p className="text-center text-gray-500 mt-10">Đang tải bài viết...</p>;
   }
 
+  const handleDeletePost = async () => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) return;
+
+    const token = localStorage.getItem('token');
+
+    const res = await fetch(`http://localhost:3000/posts/${post._id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      router.push('/');
+    } else {
+      const error = await res.json();
+      alert(error.message || 'Không thể xóa bài viết.');
+    }
+  };
   const formattedDate = new Date(post.createdAt).toLocaleDateString();
   const isAuthorMe = user?._id === post.author?._id;
 
@@ -141,7 +160,46 @@ export default function PostDetailPage() {
           />
           <span className="font-semibold">{post.author?.username}</span>
         </div>
-        {/* ... các phần còn lại của sidebar */}
+
+        <div className="flex items-center gap-2">
+          <Image src="/icons/like.png" alt="like" width={16} height={16} />
+          {post.likes?.length ?? 0} lượt thích
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Image src="/icons/bookmark.png" alt="bookmark" width={16} height={16} />
+          {post.bookmarks?.length ?? 0} bookmark
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Image src="/icons/view.png" alt="views" width={16} height={16} />
+          {post.views} lượt xem
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Image src="/icons/clock.png" alt="clock" width={16} height={16} />
+          Ngày đăng: {formattedDate}
+        </div>
+
+        {isAuthorMe && (
+          <>
+            <Link
+              href={{ pathname: '/write', query: { edit: post._id } }}
+              className="inline-flex items-center gap-1 mt-4 px-3 py-1 text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+            >
+              <Image src="/edit.png" alt="edit" width={16} height={16} />
+              Sửa bài viết
+            </Link>
+
+            <button
+              onClick={handleDeletePost}
+              disabled={loading}
+              className="inline-flex items-center gap-1 mt-2 px-3 py-1 text-red-600 border border-red-600 rounded hover:bg-red-50"
+            >
+              Xóa bài viết
+            </button>
+          </>
+        )}
       </aside>
 
       {/* Main content */}
