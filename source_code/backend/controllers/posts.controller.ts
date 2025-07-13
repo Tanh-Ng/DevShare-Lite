@@ -27,6 +27,18 @@ export class PostsController {
     return this.postsService.getAllPosts();
   }
 
+  @Get('latest')
+  async getLatestPosts() {
+    return this.postsService.getLatestPosts();
+  }
+
+  @Get('following')
+  @UseGuards(JwtAuthGuard)
+  async getPostsFromFollowing(@Req() req: Request) {
+    const currentUser = req.user as any;
+    return this.postsService.getPostsFromFollowing(currentUser.userId);
+  }
+  s
   @Get(':id')
   getPost(@Param('id') id: string) {
     return this.postsService.getPostById(id);
@@ -67,4 +79,9 @@ export class PostsController {
     const user = req.user as any;
     return this.postsService.updatePost(id, user.userId, body.title, body.content, body.coverImage);
   }
+
+
+
+
+
 }

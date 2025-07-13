@@ -2,10 +2,12 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from '../schemas/post.schema';
 import { Model, Types } from 'mongoose';
+import { User, UserDocument } from '../schemas/user.schema';
 
 @Injectable()
 export class PostsService {
-  constructor(@InjectModel(Post.name) private postModel: Model<Post>) { }
+  constructor(@InjectModel(Post.name) private postModel: Model<Post>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,) { }
 
   async createPost(title: string, content: string, authorId: string, coverImage?: string) {
     return this.postModel.create({
@@ -22,8 +24,8 @@ export class PostsService {
 
     return this.postModel
       .find({ title: { $regex: query, $options: 'i' } })
-      .populate('author', 'username') 
-      .select('title _id author')      
+      .populate('author', 'username')
+      .select('title _id author')
       .limit(5);
   }
 
@@ -106,5 +108,23 @@ export class PostsService {
 
     return await post.save();
   }
+
+  async getPostsFromFollowing(userId: string) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.postModel
+      .find({ author: { $in: user.following } })
+      .sort({ createdAt: -1 })
+      .populate('author');
+  }
+
+  async getLatestPosts() {
+    return this.postModel.find().sort({ createdAt: -1 }).populate('author');
+  }
+
 
 }

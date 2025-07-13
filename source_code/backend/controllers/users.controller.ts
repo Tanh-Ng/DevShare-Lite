@@ -64,6 +64,13 @@ export class UsersController {
   async searchUsers(@Query('q') query: string) {
     return this.usersService.searchUsersByUsernameOrEmail(query);
   }
+  @UseGuards(JwtAuthGuard)
+  @Get('bookmarks')
+  async getBookmarkedPosts(@Req() req: Request) {
+    const userId = (req.user as any).userId;
+    return this.usersService.getBookmarkedPosts(userId);
+  }
+
 
   @Get(':id')
   async getUser(@Param('id') id: string) {
@@ -122,6 +129,8 @@ export class UsersController {
     const currentUserId = (req.user as any).userId;
     return this.usersService.toggleBookmark(currentUserId, postId);
   }
+
+
 
 }
 
