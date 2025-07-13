@@ -76,7 +76,12 @@ export default function WritePage() {
           coverImage={coverImage}
           setCoverImage={setCoverImage}
         />
-        <MarkdownEditor value={content} onChange={setContent} />
+        <MarkdownEditor
+          value={content}
+          onChange={setContent}
+          height="500px"
+          mode="full"
+        />
         <div className="flex justify-end">
           <button
             onClick={handlePublish}

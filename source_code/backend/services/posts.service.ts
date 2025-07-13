@@ -33,14 +33,22 @@ export class PostsService {
     return this.postModel.find().populate('author', 'username avatarUrl');
   }
 
-  async getPostById(id: string) {
-    return this.postModel.findByIdAndUpdate(
-      id,
-      { $inc: { views: 1 } },
-      { new: true }
-    ).populate('author', 'username avatarUrl');
-  }
+  async getPostById(postId: string) {
+    const post = await this.postModel
+      .findById(postId)
+      .populate('author', 'username avatarUrl')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'author',
+          select: 'username avatarUrl',
+        },
+      });
 
+    if (!post) throw new NotFoundException('Bài viết không tồn tại');
+
+    return post;
+  }
   async getPostsByAuthor(authorId: string) {
     return this.postModel
       .find({ author: new Types.ObjectId(authorId) })

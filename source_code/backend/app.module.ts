@@ -9,7 +9,7 @@ import { AuthModule } from 'modules/auth.module';
 import { CloudinaryModule } from './modules/cloudinary.module';
 import { UploadController } from './controllers/upload.controller';
 import { MulterModule } from '@nestjs/platform-express';
-
+import { CommentsModule } from './modules/comment.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +20,7 @@ import { MulterModule } from '@nestjs/platform-express';
     PostsModule,
     UsersModule,
     AuthModule,
+    CommentsModule,
     CloudinaryModule
   ],
   controllers: [AppController, UploadController],
