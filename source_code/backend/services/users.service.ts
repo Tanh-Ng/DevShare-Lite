@@ -44,4 +44,13 @@ export class UsersService {
       { new: true }
     );
   }
+  async searchUsersByUsernameOrEmail(query: string): Promise<User[]> {
+    const regex = new RegExp(query, 'i');
+    return this.userModel.find({
+      $or: [
+        { username: { $regex: regex } },
+        { email: { $regex: regex } },
+      ],
+    }).select('_id username email avatarUrl');
+  }
 }

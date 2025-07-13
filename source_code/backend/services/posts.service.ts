@@ -22,9 +22,11 @@ export class PostsService {
 
     return this.postModel
       .find({ title: { $regex: query, $options: 'i' } })
-      .select('title _id')
+      .populate('author', 'username') 
+      .select('title _id author')      
       .limit(5);
   }
+
   async getAllPosts() {
     return this.postModel.find().populate('author', 'username avatarUrl');
   }

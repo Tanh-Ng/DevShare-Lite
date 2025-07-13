@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, UseGuards, Req, Post, Put, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, UseGuards, Req, Post, Put, Patch, Query } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { JwtAuthGuard } from '../strategies/jwt-auth.guard';
 import { Request } from 'express';
@@ -57,6 +57,10 @@ export class UsersController {
   async getAllUsers() {
     return this.usersService.findAll();
   }
+  @Get('search')
+  async searchUsers(@Query('q') query: string) {
+    return this.usersService.searchUsersByUsernameOrEmail(query);
+  }
 
   @Get(':id')
   async getUser(@Param('id') id: string) {
@@ -95,3 +99,5 @@ export class UsersController {
   }
 
 }
+
+
