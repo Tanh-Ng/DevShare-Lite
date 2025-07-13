@@ -63,6 +63,28 @@ export class PostsService {
     return post.save();
   }
 
+  async toggleStar(postId: string, userId: string) {
+    const objectUserId = new Types.ObjectId(userId);
+
+    const post = await this.postModel.findById(postId);
+    if (!post) {
+      throw new NotFoundException('Post không tồn tại');
+    }
+
+    const isStarred = post.starredBy.includes(objectUserId);
+
+    if (isStarred) {
+      post.starredBy = post.starredBy.filter(id => !id.equals(objectUserId));
+    } else {
+      post.starredBy.push(objectUserId);
+    }
+
+    await post.save();
+
+    return { isStarred: !isStarred };
+  }
+
+
   async toggleBookmark(postId: string, userId: string) {
     const post = await this.postModel.findById(postId);
     if (!post) {

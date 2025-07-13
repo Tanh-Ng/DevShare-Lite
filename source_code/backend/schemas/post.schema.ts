@@ -25,6 +25,9 @@ export class Post extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   bookmarks: Types.ObjectId[];
 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  starredBy: Types.ObjectId[];
+
   @Prop({ default: 0 })
   views: number;
 }

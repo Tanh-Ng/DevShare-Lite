@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useEffect, useState } from 'react';
 
@@ -20,6 +20,7 @@ type Post = {
     coverImage?: string;
     likes?: string[];
     comments?: string[];
+    starredBy?: string[];
 };
 
 export default function PostCard({ post }: { post: Post }) {
@@ -27,14 +28,23 @@ export default function PostCard({ post }: { post: Post }) {
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [loadingBookmark, setLoadingBookmark] = useState(false);
 
+    const [isStarred, setIsStarred] = useState(false);
+    const [loadingStar, setLoadingStar] = useState(false);
+    const [starCount, setStarCount] = useState(post.starredBy?.length ?? 0);
+
     const isAuthorMe = user?._id === post.author._id;
     const profileLink = isAuthorMe ? '/profile' : `/profile/${post.author._id}`;
 
     useEffect(() => {
-        if (user?.bookmarkedPosts) {
-            setIsBookmarked(user.bookmarkedPosts.includes(post._id));
+        if (user) {
+            if (user.bookmarkedPosts?.includes(post._id)) {
+                setIsBookmarked(true);
+            }
+            if (post.starredBy?.includes(user._id)) {
+                setIsStarred(true);
+            }
         }
-    }, [user, post._id]);
+    }, [user, post]);
 
     const handleToggleBookmark = async () => {
         if (!user) return alert('Bạn cần đăng nhập');
@@ -43,14 +53,12 @@ export default function PostCard({ post }: { post: Post }) {
             const token = localStorage.getItem('token');
             const res = await fetch(`http://localhost:3000/users/bookmarks/${post._id}`, {
                 method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
             if (res.ok) {
                 setIsBookmarked(data.isBookmarked);
-                refresh(); // cập nhật lại thông tin user
+                refresh();
             } else {
                 alert(data.message || 'Lỗi khi bookmark');
             }
@@ -58,6 +66,29 @@ export default function PostCard({ post }: { post: Post }) {
             console.error('Lỗi bookmark:', err);
         } finally {
             setLoadingBookmark(false);
+        }
+    };
+
+    const handleToggleStar = async () => {
+        if (!user) return alert('Bạn cần đăng nhập');
+        try {
+            setLoadingStar(true);
+            const token = localStorage.getItem('token');
+            const res = await fetch(`http://localhost:3000/posts/${post._id}/star`, {
+                method: 'PATCH',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setIsStarred(data.isStarred);
+                setStarCount(prev => data.isStarred ? prev + 1 : prev - 1);
+            } else {
+                alert(data.message || 'Lỗi khi đánh dấu sao');
+            }
+        } catch (err) {
+            console.error('Lỗi star:', err);
+        } finally {
+            setLoadingStar(false);
         }
     };
 
@@ -81,6 +112,7 @@ export default function PostCard({ post }: { post: Post }) {
                     <Link href={profileLink}>
                         <span className="hover:underline">{post.author.username}</span>
                     </Link>
+                    <span>• {new Date(post.createdAt).toLocaleDateString('vi-VN')}</span>
                 </div>
 
                 {/* Tiêu đề */}
@@ -90,25 +122,38 @@ export default function PostCard({ post }: { post: Post }) {
                     </h2>
                 </Link>
 
-                {/* Tóm tắt */}
+                {/* Nội dung tóm tắt */}
                 <div className="text-gray-700 text-sm line-clamp-2 mb-2">
                     <ReactMarkdown>{post.content}</ReactMarkdown>
                 </div>
 
-                {/* Metadata + Bookmark */}
+                {/* Metadata */}
                 <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
-                    {/* Stats */}
                     <div className="flex items-center space-x-4">
-                        <span className="flex items-center gap-1">
-                            <Image src="/star.png" alt="star" width={14} height={14} />
-                            {post.likes?.length ?? 0}
-                        </span>
+                        {/* Star */}
+                        <button
+                            onClick={handleToggleStar}
+                            disabled={loadingStar}
+                            className="flex items-center gap-1"
+                        >
+                            <Image
+                                src={isStarred ? '/starred.png' : '/star.png'}
+                                alt="star"
+                                width={14}
+                                height={14}
+                            />
+                            {starCount}
+                        </button>
+
+                        {/* Views */}
                         <span className="flex items-center gap-1">
                             <Image src="/views.png" alt="views" width={14} height={14} />
                             {post.views}
                         </span>
+
+                        {/* Comments */}
                         <span className="flex items-center gap-1">
-                            <Image src="/starred.png" alt="comment" width={14} height={14} />
+                            <Image src="/comments.png" alt="comment" width={14} height={14} />
                             {post.comments?.length ?? 0}
                         </span>
                     </div>
@@ -117,11 +162,10 @@ export default function PostCard({ post }: { post: Post }) {
                     <button
                         onClick={handleToggleBookmark}
                         disabled={loadingBookmark}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-md transition
-              ${isBookmarked
+                        className={`flex items-center gap-1 px-2 py-1 rounded-md transition ${isBookmarked
                                 ? 'bg-yellow-100 text-yellow-700 font-semibold'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
-              disabled:opacity-50`}
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            } disabled:opacity-50`}
                     >
                         <Image
                             src={isBookmarked ? '/bookmarked.png' : '/bookmark.png'}

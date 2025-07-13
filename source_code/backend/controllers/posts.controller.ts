@@ -80,8 +80,12 @@ export class PostsController {
     return this.postsService.updatePost(id, user.userId, body.title, body.content, body.coverImage);
   }
 
-
-
-
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/star')
+  async toggleStar(@Param('id') postId: string, @Req() req) {
+    const userId = req.user.userId;
+    const result = await this.postsService.toggleStar(postId, userId);
+    return result;
+  }
 
 }
