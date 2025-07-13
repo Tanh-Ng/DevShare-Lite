@@ -2,31 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
-import CodeBlock from '@tiptap/extension-code-block';
-import Link from '@tiptap/extension-link';
-import Youtube from '@tiptap/extension-youtube';
-
 import TitleInput from '../components/TitleInput';
 import CoverImageUploader from '../components/CoverImageUploader';
-import RichEditor from '../components/RichEditor';
 import PostPreview from '../components/PostPreview';
+import MarkdownEditor from '../components/MarkdownEditor';
 
 export default function WritePage() {
   const router = useRouter();
-  const { edit } = router.query; // lấy postId nếu có
+  const { edit } = router.query;
 
   const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
-  const editor = useEditor({
-    extensions: [StarterKit, Image, CodeBlock, Link, Youtube],
-    content: '<p>Hãy bắt đầu viết câu chuyện của bạn...</p>',
-  });
 
   useEffect(() => {
     if (edit) {
@@ -38,7 +27,7 @@ export default function WritePage() {
         .then((data) => {
           setTitle(data.title);
           setCoverImage(data.coverImage || '');
-          editor?.commands.setContent(data.content);
+          setContent(data.content);
         })
         .catch((err) => {
           console.error('Lỗi tải bài viết:', err);
@@ -46,10 +35,9 @@ export default function WritePage() {
         })
         .finally(() => setLoading(false));
     }
-  }, [edit, editor]);
+  }, [edit]);
 
   const handlePublish = async () => {
-    const content = editor?.getHTML();
     const token = localStorage.getItem('token');
 
     try {
@@ -84,8 +72,11 @@ export default function WritePage() {
     <div className="min-h-screen bg-white text-black px-8 py-10 grid grid-cols-12 gap-10">
       <div className="col-span-8 space-y-8">
         <TitleInput title={title} setTitle={setTitle} />
-        <CoverImageUploader coverImage={coverImage} setCoverImage={setCoverImage} />
-        <RichEditor editor={editor} />
+        <CoverImageUploader
+          coverImage={coverImage}
+          setCoverImage={setCoverImage}
+        />
+        <MarkdownEditor value={content} onChange={setContent} />
         <div className="flex justify-end">
           <button
             onClick={handlePublish}
@@ -96,7 +87,11 @@ export default function WritePage() {
         </div>
       </div>
       <div className="col-span-4 sticky top-10">
-        <PostPreview title={title} coverImage={coverImage} content={editor?.getText() || ''} />
+        <PostPreview
+          title={title}
+          coverImage={coverImage}
+          content={content}
+        />
       </div>
     </div>
   );

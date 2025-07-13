@@ -34,7 +34,7 @@ export default function PostPreview({
 
     return (
         <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">🧪 Xem trước</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Xem trước</h2>
             <div className="flex items-start justify-between border p-4 rounded-xl shadow-md gap-6">
                 {/* Bên trái: nội dung bài viết */}
                 <div className="flex-1">
