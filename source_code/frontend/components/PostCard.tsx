@@ -93,48 +93,42 @@ export default function PostCard({ post }: { post: Post }) {
     };
 
     return (
-        <div className="flex items-start justify-between border-b py-6 gap-6">
-            {/* Nội dung bên trái */}
+        <div className="flex items-start justify-between rounded-xl bg-white/5 backdrop-blur-sm border border-white/5 p-5 shadow-md hover:shadow-lg transition duration-300 gap-6">
             <div className="flex-1">
-                {/* Tác giả */}
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                {/* Author */}
+                <div className="flex items-center gap-2 text-sm text-black-400 mb-1">
                     <Link href={profileLink}>
-                        {post.author.avatarUrl ? (
-                            <img
-                                src={post.author.avatarUrl}
-                                alt={post.author.username}
-                                className="w-6 h-6 rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-6 h-6 rounded-full bg-gray-300" />
-                        )}
+                        <img
+                            src={post.author.avatarUrl || '/avatar.png'}
+                            alt={post.author.username}
+                            className="w-7 h-7 rounded-full object-cover"
+                        />
                     </Link>
                     <Link href={profileLink}>
-                        <span className="hover:underline">{post.author.username}</span>
+                        <span className="hover:underline text-black font-medium">{post.author.username}</span>
                     </Link>
-                    <span>• {new Date(post.createdAt).toLocaleDateString('vi-VN')}</span>
+                    <span className="text-gray-500">• {new Date(post.createdAt).toLocaleDateString('vi-VN')}</span>
                 </div>
 
-                {/* Tiêu đề */}
+                {/* Title */}
                 <Link href={`/post/${post._id}`}>
-                    <h2 className="text-xl font-bold text-gray-900 hover:underline mb-1">
+                    <h2 className="text-xl font-bold text-black hover:text-blue-400 transition mb-1">
                         {post.title}
                     </h2>
                 </Link>
 
-                {/* Nội dung tóm tắt */}
-                <div className="text-gray-700 text-sm line-clamp-2 mb-2">
+                {/* Preview */}
+                <div className="text-gray-600 text-sm line-clamp-2 mb-2 prose prose-sm max-w-none">
                     <ReactMarkdown>{post.content}</ReactMarkdown>
                 </div>
 
-                {/* Metadata */}
-                <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
-                    <div className="flex items-center space-x-4">
-                        {/* Star */}
+                {/* Actions */}
+                <div className="flex items-center justify-between text-xs mt-3">
+                    <div className="flex items-center gap-4 text-gray-400">
                         <button
                             onClick={handleToggleStar}
                             disabled={loadingStar}
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 hover:text-yellow-400 transition"
                         >
                             <Image
                                 src={isStarred ? '/starred.png' : '/star.png'}
@@ -145,26 +139,23 @@ export default function PostCard({ post }: { post: Post }) {
                             {starCount}
                         </button>
 
-                        {/* Views */}
                         <span className="flex items-center gap-1">
                             <Image src="/views.png" alt="views" width={14} height={14} />
                             {post.views}
                         </span>
 
-                        {/* Comments */}
                         <span className="flex items-center gap-1">
                             <Image src="/comments.png" alt="comment" width={14} height={14} />
                             {post.comments?.length ?? 0}
                         </span>
                     </div>
 
-                    {/* Bookmark */}
                     <button
                         onClick={handleToggleBookmark}
                         disabled={loadingBookmark}
                         className={`flex items-center gap-1 px-2 py-1 rounded-md transition ${isBookmarked
-                                ? 'bg-yellow-100 text-yellow-700 font-semibold'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-yellow-400/10 text-yellow-300 font-semibold'
+                                : 'bg-white/10 text-gray-300 hover:bg-white/20'
                             } disabled:opacity-50`}
                     >
                         <Image
@@ -178,16 +169,16 @@ export default function PostCard({ post }: { post: Post }) {
                 </div>
             </div>
 
-            {/* Ảnh bìa bên phải */}
             {post.coverImage && (
                 <Link href={`/post/${post._id}`}>
                     <img
                         src={post.coverImage}
                         alt="Cover"
-                        className="w-40 h-24 rounded object-cover shrink-0"
+                        className="w-40 h-24 rounded-lg object-cover shadow-sm"
                     />
                 </Link>
             )}
         </div>
     );
+
 }

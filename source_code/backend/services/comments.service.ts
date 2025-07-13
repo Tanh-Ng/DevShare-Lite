@@ -1,5 +1,5 @@
 // services/comments.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Comment, CommentDocument } from '../schemas/comment.schema';
@@ -85,5 +85,28 @@ export class CommentsService {
         });
 
         return roots;
+    }
+
+    // Sửa comment
+    async updateComment(commentId: string, userId: string, content: string) {
+        const comment = await this.commentModel.findById(commentId);
+
+        if (!comment) throw new NotFoundException('Không tìm thấy comment');
+        if (comment.author.toString() !== userId) throw new ForbiddenException('Không có quyền sửa');
+
+        comment.content = content;
+        await comment.save();
+        return comment;
+    }
+
+    // Xoá comment
+    async deleteComment(commentId: string, userId: string) {
+        const comment = await this.commentModel.findById(commentId);
+
+        if (!comment) throw new NotFoundException('Không tìm thấy comment');
+        if (comment.author.toString() !== userId) throw new ForbiddenException('Không có quyền xóa');
+
+        await this.commentModel.deleteOne({ _id: commentId });
+        return { message: 'Đã xoá bình luận' };
     }
 }
