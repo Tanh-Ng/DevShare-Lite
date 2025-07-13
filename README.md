@@ -137,3 +137,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 ---
 
+## 📚 Tài liệu liên quan
+
+- 👉 [Thiết kế cơ sở dữ liệu](./DATABASE_DESIGN.md)
+- 👉 [Tài liệu tính năng (FEATURES.md)](./FEATURES.md)
