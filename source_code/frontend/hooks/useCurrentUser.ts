@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 
 interface User {
-    id: string;
+    _id: string;
     email: string;
     username: string;
     bio?: string;
@@ -21,7 +21,7 @@ export function useCurrentUser() {
             headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        setUser(data); // data sẽ là kiểu User
+        setUser(data);
         setLoading(false);
     };
 

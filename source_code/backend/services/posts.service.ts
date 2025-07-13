@@ -21,8 +21,8 @@ export class PostsService {
     if (!query) return [];
 
     return this.postModel
-      .find({ title: { $regex: query, $options: 'i' } }) 
-      .select('title _id') 
+      .find({ title: { $regex: query, $options: 'i' } })
+      .select('title _id')
       .limit(5);
   }
   async getAllPosts() {
@@ -35,6 +35,13 @@ export class PostsService {
       { $inc: { views: 1 } },
       { new: true }
     ).populate('author', 'username avatarUrl');
+  }
+
+  async getPostsByAuthor(authorId: string) {
+    return this.postModel
+      .find({ author: new Types.ObjectId(authorId) }) 
+      .populate('author', 'username avatarUrl')
+      .sort({ createdAt: -1 });
   }
 
 

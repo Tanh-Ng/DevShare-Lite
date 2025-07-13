@@ -21,7 +21,7 @@ export class PostsController {
   async searchPosts(@Query('q') query: string) {
     return this.postsService.searchPostsByTitle(query);
   }
-  
+
   @Get()
   getAllPosts() {
     return this.postsService.getAllPosts();
@@ -31,6 +31,13 @@ export class PostsController {
   getPost(@Param('id') id: string) {
     return this.postsService.getPostById(id);
   }
+
+  @Get('by-author/:authorId')
+  async getPostsByAuthor(@Param('authorId') authorId: string) {
+    return this.postsService.getPostsByAuthor(authorId);
+  }
+
+
 
   @Patch(':id/like')
   like(@Param('id') id: string, @Body() body: { userId: string }) {

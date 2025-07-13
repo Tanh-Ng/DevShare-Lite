@@ -32,8 +32,8 @@ export default function PostDetailPage() {
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
           {post.author?.avatarUrl ? (
             <img
-              src={post.author.avatarUrl}
-              alt={post.author.username}
+              src={post.author.avatarUrl || '/avatar.png'}
+              alt={post.author.username|| 'Avatar'}
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (

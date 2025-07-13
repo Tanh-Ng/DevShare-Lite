@@ -19,7 +19,7 @@ export class UsersController {
       return {
         message: 'Đăng ký thành công',
         user: {
-          id: user._id,
+          _id: user._id,
           email: user.email,
           username: user.username ?? '',
         },
@@ -43,7 +43,7 @@ export class UsersController {
     }
 
     return {
-      id: found._id,
+      _id: found._id,
       email: found.email,
       username: found.username || '',
       bio: found.bio || '',
@@ -63,9 +63,13 @@ export class UsersController {
     const user = await this.usersService.findById(id);
     if (!user) return { message: 'User not found' };
     return {
-      id: user._id,
+      _id: user._id,
       email: user.email,
       username: user.username,
+      bio: user.bio || '',
+      avatarUrl: user.avatarUrl || '',
+      avatarPublicId: user.avatarPublicId || '',
+      joined: user.joined
     };
   }
   @UseGuards(JwtAuthGuard)

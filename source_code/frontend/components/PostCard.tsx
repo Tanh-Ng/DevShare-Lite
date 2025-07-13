@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 type Post = {
     _id: string;
@@ -22,23 +23,33 @@ type Post = {
 
 export default function PostCard({ post }: { post: Post }) {
     const formattedDate = new Date(post.createdAt).toLocaleDateString();
+    const { user } = useCurrentUser();
+
+    const isAuthorMe = user?._id === post.author._id;
+    console.log("Post author ID:", post.author._id);
+    console.log("Current user ID:", user?._id);
+    const profileLink = isAuthorMe ? '/profile' : `/profile/${post.author._id}`;
 
     return (
         <div className="flex items-start justify-between border-b py-6 gap-6">
             {/* Bên trái: nội dung bài viết */}
             <div className="flex-1">
-                {/* Tác giả */}
+                {/* Tác giả với link tới profile */}
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                    {post.author?.avatarUrl ? (
-                        <img
-                            src={post.author.avatarUrl}
-                            alt={post.author.username}
-                            className="w-6 h-6 rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-6 h-6 rounded-full bg-gray-300" />
-                    )}
-                    <span>{post.author?.username || 'Unknown'}</span>
+                    <Link href={profileLink}>
+                        {post.author?.avatarUrl ? (
+                            <img
+                                src={post.author.avatarUrl || '/avatar.png'}
+                                alt={post.author.username || 'Avatar'}
+                                className="w-6 h-6 rounded-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-6 h-6 rounded-full bg-gray-300" />
+                        )}
+                    </Link>
+                    <Link href={profileLink}>
+                        <span>{post.author?.username || 'Unknown'}</span>
+                    </Link>
                 </div>
 
                 {/* Tiêu đề */}
@@ -53,7 +64,7 @@ export default function PostCard({ post }: { post: Post }) {
                     <ReactMarkdown>{post.content}</ReactMarkdown>
                 </div>
 
-                {/* Metadata: thời gian, lượt xem, bình luận, bookmark */}
+                {/* Metadata */}
                 <div className="flex items-center text-xs text-gray-500 space-x-4 mt-2">
                     <span className="flex items-center gap-1">
                         <Image src="/star.png" alt="star" width={14} height={14} />
