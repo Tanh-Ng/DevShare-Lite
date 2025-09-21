@@ -9,7 +9,7 @@ export default function FloatingActionButton() {
     return (
         <div className="fixed bottom-6 right-6 z-40">
             {/* Menu Items */}
-            <div className={`absolute bottom-16 right-0 space-y-3 transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+            <div className={`absolute bottom-16 right-0 space-y-3 z-50 transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
                 }`}>
                 <Link
                     href="/write"
