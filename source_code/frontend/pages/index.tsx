@@ -22,9 +22,11 @@ export default function LandingPage() {
 
   if (checkingAuth) return null;
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-gradient-to-br from-slate-900 to-gray-800 text-white">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-gradient-to-br from-background to-muted/20">
       <WelcomeSection />
-      <AuthForm isLoginMode={isLoginMode} setIsLoginMode={setIsLoginMode} />
+      <div className="flex items-center justify-center p-8 bg-card/50 backdrop-blur-sm">
+        <AuthForm isLoginMode={isLoginMode} setIsLoginMode={setIsLoginMode} />
+      </div>
     </div>
   );
 }
