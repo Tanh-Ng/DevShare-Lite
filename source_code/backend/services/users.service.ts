@@ -117,7 +117,13 @@ export class UsersService {
 
 
   async getBookmarkedPosts(userId: string) {
-    const user = await this.userModel.findById(userId).populate('bookmarkedPosts');
+    const user = await this.userModel.findById(userId).populate({
+      path: 'bookmarkedPosts',
+      populate: {
+        path: 'author',
+        select: '_id username avatarUrl'
+      }
+    });
     if (!user) throw new NotFoundException('User not found');
     return user.bookmarkedPosts;
   }
