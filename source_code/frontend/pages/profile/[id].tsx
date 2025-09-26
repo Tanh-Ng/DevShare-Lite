@@ -35,7 +35,7 @@ export default function ProfilePage() {
                 const isFollowing = userData.followers?.includes(currentUser._id);
                 setIsFollowing(isFollowing);
             } catch (err) {
-                console.error('Lỗi tải dữ liệu:', err);
+                console.error('An error occured', err);
             } finally {
                 setLoading(false);
             }
@@ -46,7 +46,7 @@ export default function ProfilePage() {
 
     const handleToggleFollow = async () => {
         const token = localStorage.getItem('token');
-        if (!token) return alert('Bạn cần đăng nhập');
+        if (!token) return alert('You must be logged in to follow users');
 
         try {
             const res = await fetch(`http://localhost:3000/users/${id}/follow`, {
@@ -65,19 +65,19 @@ export default function ProfilePage() {
                     followersCount: result.followersCount
                 }));
             } else {
-                alert(result.message || 'Lỗi thực hiện follow');
+                alert(result.message || 'Failed to follow/unfollow user');
             }
         } catch (error) {
-            console.error('Lỗi khi follow:', error);
+            console.error('An error occurred', error);
         }
     };
 
-    if (loading || userLoading) return <div className="p-4 text-center text-gray-600">Đang tải...</div>;
-    if (!user) return <div className="p-4 text-center text-red-500">Không tìm thấy người dùng.</div>;
+    if (loading || userLoading) return <div className="p-4 text-center text-gray-600">Loading...</div>;
+    if (!user) return <div className="p-4 text-center text-red-500">Cannot find user</div>;
 
     const joinedDate = user.joined
         ? new Date(user.joined).toLocaleDateString('vi-VN')
-        : 'Không rõ';
+        : 'Unknown';
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -91,7 +91,7 @@ export default function ProfilePage() {
                 <div className="flex-1">
                     <h2 className="text-2xl font-bold text-gray-800">{user.username}</h2>
                     <p className="text-gray-600">{user.email}</p>
-                    <p className="text-sm text-gray-500 italic">Tham gia: {joinedDate}</p>
+                    <p className="text-sm text-gray-500 italic">Joined: {joinedDate}</p>
                     {user.bio && <p className="text-gray-700 mt-2">{user.bio}</p>}
                 </div>
 
@@ -103,7 +103,7 @@ export default function ProfilePage() {
                             : 'bg-blue-500 text-white hover:bg-blue-600'
                             }`}
                     >
-                        {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
+                        {isFollowing ? 'Following' : 'Follow'}
                     </button>
                 )}
                 <p className="text-sm text-gray-500">
@@ -112,10 +112,10 @@ export default function ProfilePage() {
             </div>
 
             {/* Danh sách bài viết */}
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Bài viết</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Posts</h3>
             <div className="space-y-4">
                 {posts.length === 0 ? (
-                    <p className="text-gray-500 italic">Người dùng này chưa có bài viết nào.</p>
+                    <p className="text-gray-500 italic">This user has not upload any posts yet</p>
                 ) : (
                     posts.map((post) => <PostCard key={post._id} post={post} />)
                 )}

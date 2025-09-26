@@ -6,11 +6,15 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 import Link from 'next/link';
 import Image from 'next/image';
 import MarkdownEditor from '../../components/MarkdownEditor';
+import { useToast } from '../../hooks/useToast';
+import { ToastContainer } from '../../components/Toast';
+import { MessageCircle, Star, Eye, CalendarDays } from 'lucide-react';
 
 export default function PostDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   const { user } = useCurrentUser();
+  const { toasts, success, error, info, warning, removeToast } = useToast();
 
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
@@ -32,19 +36,35 @@ export default function PostDetailPage() {
     if (!id) return;
     const res = await fetch(`http://localhost:3000/comments/post/${id}`);
     const data = await res.json();
-    console.log('Fetched comments:', data); // ✅ LOG KIỂM TRA
+    console.log('Fetched comments:', data); 
     setComments(data);
   };
 
   useEffect(() => {
     fetchPost();
     fetchComments();
+    (async () => {
+      if (!id) return;
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return; // only count when logged in to identify author
+        await fetch(`http://localhost:3000/posts/${id}/view`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (e) {
+        // ignore view errors
+      }
+    })();
   }, [id]);
 
   const handleCommentSubmit = async (parentCommentId?: string) => {
     const content = parentCommentId ? replyContent.trim() : commentContent.trim();
     if (!content) return;
-    if (!user) return alert('Vui lòng đăng nhập để bình luận.');
+    if (!user) {
+      warning('Vui lòng đăng nhập để bình luận.');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -71,10 +91,11 @@ export default function PostDetailPage() {
         await fetchComments();
       } else {
         const err = await res.json();
-        alert(err.message || 'Lỗi khi gửi bình luận.');
+        error('Lỗi khi gửi bình luận', err.message);
       }
     } catch (err) {
       console.error(err);
+      error('Lỗi không xác định khi gửi bình luận');
     } finally {
       setLoading(false);
     }
@@ -82,8 +103,8 @@ export default function PostDetailPage() {
 
   const renderComments = (commentList: any[], depth = 0) => {
     return commentList.map((comment) => (
-      <div key={comment._id} style={{ marginLeft: depth * 16 }} className="mb-3 border-b pb-2">
-        <p className="text-sm font-semibold text-gray-800">{comment.author?.username || 'Ẩn danh'}</p>
+      <div key={comment._id} style={{ marginLeft: depth * 16 }} className="mb-3 border border-border rounded-lg p-3 bg-card">
+        <p className="text-sm font-semibold">{comment.author?.username || 'Anonymous'}</p>
 
         {editingCommentId === comment._id ? (
           <div className="mt-2">
@@ -112,21 +133,21 @@ export default function PostDetailPage() {
             </div>
           </div>
         ) : (
-          <div className="prose prose-sm text-gray-700">
+          <div className="prose prose-sm">
             <ReactMarkdown>{comment.content}</ReactMarkdown>
           </div>
         )}
 
         {/* Các nút điều khiển */}
-        <div className="flex flex-wrap gap-2 mt-1 ml-2 text-xs text-gray-500">
+        <div className="flex flex-wrap gap-2 mt-2 text-xs text-muted-foreground">
           {user && (
             <button
               onClick={() =>
                 setActiveReplyId(activeReplyId === comment._id ? null : comment._id)
               }
-              className="text-blue-600 hover:underline"
+              className="underline hover:text-foreground"
             >
-              {activeReplyId === comment._id ? 'Hủy trả lời' : 'Trả lời'}
+              {activeReplyId === comment._id ? 'Cancel reply' : 'Reply'}
             </button>
           )}
 
@@ -137,14 +158,14 @@ export default function PostDetailPage() {
                   setEditingCommentId(comment._id);
                   setEditContent(comment.content);
                 }}
-                className="text-yellow-600 hover:underline"
+                className="underline"
               >
                 Sửa
               </button>
 
               <button
                 onClick={() => handleDeleteComment(comment._id)}
-                className="text-red-600 hover:underline"
+                className="underline text-destructive"
               >
                 Xóa
               </button>
@@ -154,7 +175,7 @@ export default function PostDetailPage() {
 
         {/* Ô trả lời */}
         {activeReplyId === comment._id && (
-          <div className="mt-2 ml-2">
+          <div className="mt-2">
             <MarkdownEditor
               value={replyContent}
               onChange={setReplyContent}
@@ -164,9 +185,9 @@ export default function PostDetailPage() {
             <button
               onClick={() => handleCommentSubmit(comment._id)}
               disabled={loading}
-              className="text-xs bg-blue-500 text-white rounded px-2 py-1 mt-1 hover:bg-blue-600 disabled:opacity-50"
+              className="text-xs btn-primary rounded px-3 py-1 mt-2 disabled:opacity-50"
             >
-              {loading ? 'Đang gửi...' : 'Gửi trả lời'}
+              {loading ? 'Sending...' : 'Send Reply'}
             </button>
           </div>
         )}
@@ -182,7 +203,7 @@ export default function PostDetailPage() {
   };
 
   if (!post) {
-    return <p className="text-center text-gray-500 mt-10">Đang tải bài viết...</p>;
+    return <p className="text-center text-gray-500 mt-10">Getting post ... </p>;
   }
 
   const handleEditComment = async (commentId: string) => {
@@ -201,13 +222,11 @@ export default function PostDetailPage() {
       setEditContent('');
       await fetchComments();
     } else {
-      alert('Lỗi khi sửa bình luận');
+      error('Cannot update comment');
     }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xoá bình luận này không?')) return;
-
     const token = localStorage.getItem('token');
     const res = await fetch(`http://localhost:3000/comments/${commentId}`, {
       method: 'DELETE',
@@ -215,15 +234,14 @@ export default function PostDetailPage() {
     });
 
     if (res.ok) {
+      success('Đã xoá bình luận');
       await fetchComments();
     } else {
-      alert('Lỗi khi xoá bình luận');
+      error('Lỗi khi xoá bình luận');
     }
   };
 
   const handleDeletePost = async () => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) return;
-
     const token = localStorage.getItem('token');
 
     const res = await fetch(`http://localhost:3000/posts/${post._id}`, {
@@ -234,63 +252,72 @@ export default function PostDetailPage() {
     });
 
     if (res.ok) {
-      router.push('/');
+      success('Post deleted successfully');
+      setTimeout(() => router.push('/'), 300);
     } else {
-      const error = await res.json();
-      alert(error.message || 'Không thể xóa bài viết.');
+      const err = await res.json();
+      error('Unable to delete post', err.message);
     }
   };
   const formattedDate = new Date(post.createdAt).toLocaleDateString();
   const isAuthorMe = user?._id === post.author?._id;
 
   return (
-    <div className="grid grid-cols-12 gap-6 max-w-screen-xl mx-auto mt-6 px-6">
+    <div className="grid grid-cols-12 gap-6 max-w-screen-xl mx-auto mt-6 px-6 text-foreground">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       {/* Left Sidebar */}
-      <aside className="col-span-2 sticky top-20 self-start space-y-4 bg-white p-4 border rounded-2xl shadow-sm text-sm text-gray-700">
+      <aside className="col-span-2 sticky top-20 self-start space-y-4 bg-card text-card-foreground p-4 border border-border rounded-2xl shadow-sm text-sm">
         <div className="flex items-center gap-3">
           <img
             src={post.author?.avatarUrl || '/avatar.png'}
             alt="avatar"
-            className="w-10 h-10 rounded-full object-cover border"
+            className="w-10 h-10 rounded-full object-cover border border-border"
           />
           <span className="font-semibold">{post.author?.username}</span>
         </div>
 
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
-            <Image src="/star.png" alt="like" width={16} height={16} />
+            <Star className="w-4 h-4" />
             {post.starredBy?.length ?? 0} starred
           </div>
           <div className="flex items-center gap-2">
-            <Image src="/views.png" alt="view" width={16} height={16} />
-            {post.views} lượt xem
+            <Eye className="w-4 h-4" />
+            {post.views} views
           </div>
           <div className="flex items-center gap-2">
-            <Image src="/time.png" alt="date" width={16} height={16} />
+            <CalendarDays className="w-4 h-4" />
             {formattedDate}
           </div>
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {post.tags.map((tag: string) => (
+                <span key={tag} className="px-2 py-0.5 text-xs rounded bg-muted text-muted-foreground">#{tag}</span>
+              ))}
+            </div>
+          )}
         </div>
 
         {isAuthorMe && (
           <>
             <Link
               href={{ pathname: '/write', query: { edit: post._id } }}
-              className="block mt-4 px-3 py-1 text-center text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+              className="block mt-4 px-3 py-1 text-center border rounded border-border hover:bg-accent hover:text-accent-foreground"
             >
-              Sửa bài viết
+              Edit Post
             </Link>
             <button
               onClick={handleDeletePost}
-              className="block mt-2 w-full px-3 py-1 text-center text-red-600 border border-red-600 rounded hover:bg-red-50"
+              className="block mt-2 w-full px-3 py-1 text-center border rounded border-destructive text-destructive hover:bg-destructive/10"
             >
-              Xóa bài viết
+              Delete post
             </button>
           </>
         )}
       </aside>
 
       {/* Main content */}
-      <main className="col-span-7 bg-white rounded-2xl p-6 shadow-md">
+      <main className="col-span-7 bg-card text-card-foreground rounded-2xl p-6 shadow-md border border-border">
         {post.coverImage && (
           <div className="w-full aspect-video overflow-hidden rounded-lg mb-6 shadow-sm">
             <img
@@ -300,19 +327,22 @@ export default function PostDetailPage() {
             />
           </div>
         )}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
-        <div className="prose prose-lg max-w-none text-gray-800">
+        {post.summary && (
+          <p className="text-sm text-muted-foreground mb-3">{post.summary}</p>
+        )}
+        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+        <div className="prose prose-lg max-w-none">
           <ReactMarkdown>{post.content}</ReactMarkdown>
         </div>
       </main>
 
       {/* Comments Sidebar */}
-      <aside className="col-span-3 space-y-4 bg-white p-4 rounded-2xl shadow-md">
-        <h2 className="text-xl font-semibold text-gray-800">💬 Bình luận</h2>
+      <aside className="col-span-3 space-y-4 bg-card text-card-foreground p-4 rounded-2xl shadow-md border border-border">
+        <h2 className="text-xl font-semibold flex items-center gap-2"><MessageCircle className="w-5 h-5" /> Bình luận</h2>
 
         {user ? (
           <div>
-            <h3 className="font-semibold text-gray-700 mb-1">Viết bình luận</h3>
+            <h3 className="font-semibold mb-1">Viết bình luận</h3>
             <MarkdownEditor
               value={commentContent}
               onChange={setCommentContent}
@@ -322,24 +352,24 @@ export default function PostDetailPage() {
             <button
               onClick={() => handleCommentSubmit()}
               disabled={loading}
-              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition"
+              className="mt-2 px-4 py-2 btn-primary rounded-md disabled:opacity-50 transition"
             >
               {loading ? 'Đang gửi...' : 'Gửi bình luận'}
             </button>
           </div>
         ) : (
-          <p className="text-sm text-gray-500 italic">
-            Hãy{' '}
-            <Link href="/login" className="text-blue-600 underline hover:text-blue-800">
-              đăng nhập
+          <p className="text-sm text-muted-foreground italic">
+            Please{' '}
+            <Link href="/login" className="underline">
+              login
             </Link>{' '}
-            để bình luận.
+            to reply.
           </p>
         )}
 
         <div className="space-y-4">
           {comments.length > 0 ? renderComments(comments) : (
-            <p className="text-sm text-gray-400">Chưa có bình luận nào.</p>
+            <p className="text-sm text-muted-foreground">Chưa có bình luận nào.</p>
           )}
         </div>
       </aside>
