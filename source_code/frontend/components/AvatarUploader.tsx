@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { getAvatarImageUrl } from '../utils/cloudinary';
+import { Image as ImageIcon } from 'lucide-react';
 export function AvatarUploader({
     avatarUrl,
     avatarPublicId,
@@ -60,15 +61,15 @@ export function AvatarUploader({
             <img
                 src={getAvatarImageUrl(avatarUrl) || '/avatar.png'}
                 alt="Avatar"
-                className="w-full h-full object-cover rounded-full border"
+                className="w-full h-full object-cover rounded-full border border-border"
             />
 
             <button
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 bg-white text-xs px-2 py-1 border rounded shadow hover:bg-gray-100"
+                className="absolute bottom-0 right-0 text-xs px-2 py-1 rounded-lg bg-card border border-border shadow hover:bg-accent inline-flex items-center gap-1"
                 disabled={loading}
             >
-                {loading ? 'Đang cập nhật...' : 'Đổi ảnh'}
+                {loading ? 'Uploading...' : (<><ImageIcon className="w-3 h-3" /> Change image</>)}
             </button>
 
             <input
@@ -79,7 +80,7 @@ export function AvatarUploader({
                 className="hidden"
             />
 
-            {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            {error && <p className="text-destructive text-xs mt-1">{error}</p>}
         </div>
     );
 }

@@ -1,6 +1,7 @@
 // components/CoverImageUploader.tsx
 'use client';
 import { getCoverImageUrl } from '../utils/cloudinary';
+import { Image as ImageIcon, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 interface Props {
@@ -30,26 +31,30 @@ export default function CoverImageUploader({ coverImage, setCoverImage }: Props)
                 setCoverImage(data.url);
                 setMessage('');
             } else {
-                setMessage(data.message || 'Upload thất bại');
+                setMessage(data.message || 'Failed to upload image');
             }
         } catch (err) {
-            setMessage('Lỗi khi tải ảnh');
+            setMessage('Failed to upload image');
         } finally {
             setUploading(false);
         }
     };
 
     return (
-        <div>
+        <div className="space-y-2">
             {coverImage ? (
-                <img src={getCoverImageUrl(coverImage)} alt="Cover" className="w-full rounded-xl shadow mb-4" />
+                <img src={getCoverImageUrl(coverImage)} alt="Cover" className="w-full rounded-xl border border-border shadow mb-2" />
             ) : (
-                <div className="border border-dashed border-gray-400 rounded p-6 text-center text-gray-500">
-                    {uploading ? 'Đang tải ảnh...' : 'Chưa chọn ảnh bìa'}
+                <div className="border border-dashed border-border rounded p-6 text-center text-muted-foreground bg-card">
+                    {uploading ? 'Loading image' : 'No cover image selected'}
                 </div>
             )}
-            <input type="file" accept="image/*" onChange={handleImageChange} className="mt-2" />
-            {message && <p className="text-sm text-red-500">{message}</p>}
+            <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-border hover:bg-accent cursor-pointer w-fit">
+                <Upload className="w-4 h-4" />
+                <span>Chọn ảnh bìa</span>
+                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+            </label>
+            {message && <p className="text-sm text-destructive">{message}</p>}
         </div>
     );
 }

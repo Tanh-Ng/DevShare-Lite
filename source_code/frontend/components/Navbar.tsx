@@ -1,19 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import SearchBar from './SearchBar';
 import ThemeToggle from './ThemeToggle';
+import { useToast } from '../hooks/useToast';
+import Link from 'next/link';
+import { X } from 'lucide-react';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotiOpen, setIsNotiOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, loading } = useCurrentUser();
   const router = useRouter();
+  const { toasts, error, removeToast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,11 +34,28 @@ export default function Navbar() {
       if (isProfileOpen && !(event.target as Element).closest('.profile-dropdown')) {
         setIsProfileOpen(false);
       }
+      if (isNotiOpen && !(event.target as Element).closest('.noti-dropdown')) {
+        setIsNotiOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isProfileOpen]);
+
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch('http://localhost:3000/users/me/notifications', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setNotifications(data);
+    } catch (e) {
+      error('Không thể tải thông báo');
+    }
+  };
 
   return (
     <header
@@ -76,14 +98,108 @@ export default function Navbar() {
           <ThemeToggle />
 
           {/* Notification Icon */}
-          <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
-            </svg>
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs flex items-center justify-center text-destructive-foreground">
-              3
-            </span>
-          </button>
+          <div className="relative noti-dropdown">
+            <button
+              onClick={async () => {
+                setIsNotiOpen((prev) => !prev);
+                if (!notifications) await fetchNotifications();
+              }}
+              className="relative p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
+              </svg>
+              {notifications && (notifications.followers > 0 || notifications.likes?.length > 0 || notifications.comments?.length > 0) && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full"></span>
+              )}
+            </button>
+
+            {isNotiOpen && (
+              <div className="absolute right-0 mt-2 w-96 bg-card border border-border rounded-xl shadow-2xl z-50 p-4">
+                <h4 className="text-sm font-semibold mb-2">Notifications</h4>
+                {!notifications ? (
+                  <p className="text-sm text-muted-foreground">Loading...</p>
+                ) : (
+                  <div className="space-y-4 max-h-[28rem] overflow-auto">
+                    {/* Followers */}
+                    {notifications.followers > 0 && (
+                      <div className="text-sm border border-border rounded-lg p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="font-medium">New followers</div>
+                            <div className="text-muted-foreground">{notifications.followers} people are following you</div>
+                          </div>
+                          <button
+                            aria-label="Dismiss followers notification"
+                            className="text-muted-foreground hover:text-foreground"
+                            onClick={() => setNotifications((prev: any) => ({ ...prev, followers: 0 }))}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Likes grouped by post */}
+                    {notifications.likes && notifications.likes.length > 0 && (
+                      <div className="text-sm border border-border rounded-lg">
+                        <div className="px-3 py-2 border-b border-border font-medium">Likes</div>
+                        <div className="divide-y divide-border">
+                          {notifications.likes.slice(0, 5).map((l: any) => (
+                            <div key={l.postId} className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-accent">
+                              <Link href={`/post/${l.postId}`} className="text-muted-foreground hover:text-foreground truncate">
+                                {l.count} liked "{l.title}"
+                              </Link>
+                              <button
+                                aria-label="Dismiss like notification"
+                                className="text-muted-foreground hover:text-foreground"
+                                onClick={() => setNotifications((prev: any) => ({ ...prev, likes: prev.likes.filter((x: any) => x.postId !== l.postId) }))}
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        {notifications.likes.length > 5 && (
+                          <div className="px-3 py-2 text-muted-foreground">and {notifications.likes.length - 5} more…</div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Comments grouped by post */}
+                    {notifications.comments && notifications.comments.length > 0 && (
+                      <div className="text-sm border border-border rounded-lg">
+                        <div className="px-3 py-2 border-b border-border font-medium">Comments</div>
+                        <div className="divide-y divide-border">
+                          {notifications.comments.slice(0, 5).map((c: any) => (
+                            <div key={c.postId} className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-accent">
+                              <Link href={`/post/${c.postId}`} className="text-muted-foreground hover:text-foreground truncate">
+                                {c.count} comments on "{c.title}"
+                              </Link>
+                              <button
+                                aria-label="Dismiss comment notification"
+                                className="text-muted-foreground hover:text-foreground"
+                                onClick={() => setNotifications((prev: any) => ({ ...prev, comments: prev.comments.filter((x: any) => x.postId !== c.postId) }))}
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        {notifications.comments.length > 5 && (
+                          <div className="px-3 py-2 text-muted-foreground">and {notifications.comments.length - 5} more…</div>
+                        )}
+                      </div>
+                    )}
+
+                    {notifications.followers === 0 && notifications.likes?.length === 0 && notifications.comments?.length === 0 && (
+                      <p className="text-sm text-muted-foreground">No notifications</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Avatar with Dropdown */}
           <div className="relative profile-dropdown">
