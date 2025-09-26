@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { Search, Users, FileText } from 'lucide-react';
 
 interface Post {
     _id: string;
@@ -65,28 +65,31 @@ export default function SearchBar() {
 
     return (
         <div className="relative w-full max-w-md">
-            <input
-                type="text"
-                placeholder="Tìm bài viết hoặc người dùng..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border"
-            />
+            <div className="flex items-center gap-2 w-full px-3 py-2 rounded-md border border-border bg-card text-card-foreground ring-offset-background focus-within:ring-2 focus-within:ring-primary/40 transition">
+                <Search className="w-4 h-4 text-muted-foreground" />
+                <input
+                    type="text"
+                    placeholder="Search posts or users..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full bg-transparent outline-none placeholder:text-muted-foreground/70"
+                />
+            </div>
 
             {showDropdown && (
-                <div className="absolute left-0 right-0 mt-2 bg-white border rounded shadow-md z-50 max-h-80 overflow-auto">
+                <div className="absolute left-0 right-0 mt-2 bg-card text-card-foreground border border-border rounded-lg shadow-xl z-50 max-h-80 overflow-auto">
                     {userResults.length > 0 && (
                         <div>
-                            <div className="flex items-center gap-2 px-4 py-2 font-semibold text-gray-700 border-b bg-gray-50">
-                                <Image src="/user.png" alt="User" width={16} height={16} />
-                                Người dùng
+                            <div className="flex items-center gap-2 px-4 py-2 font-semibold border-b border-border bg-muted/50">
+                                <Users className="w-4 h-4" />
+                                <span>User</span>
                             </div>
                             {userResults.map((user) => (
                                 <Link
                                     key={user._id}
                                     href={`/profile/${user._id}`}
                                     onClick={handleClick}
-                                    className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 text-sm"
+                                    className="flex items-center gap-2 px-4 py-2 hover:bg-accent text-sm"
                                 >
                                     <img
                                         src={user.avatarUrl || '/avatar.png'}
@@ -94,7 +97,7 @@ export default function SearchBar() {
                                         className="w-6 h-6 rounded-full object-cover"
                                     />
                                     <span>{user.username}</span>
-                                    <span className="text-gray-400 text-xs ml-auto">{user.email}</span>
+                                    <span className="text-muted-foreground text-xs ml-auto">{user.email}</span>
                                 </Link>
                             ))}
                         </div>
@@ -102,20 +105,20 @@ export default function SearchBar() {
 
                     {postResults.length > 0 && (
                         <div>
-                            <div className="flex items-center gap-2 px-4 py-2 font-semibold text-gray-700 border-b bg-gray-50">
-                                <Image src="/posts.png" alt="Post" width={16} height={16} />
-                                Bài viết
+                            <div className="flex items-center gap-2 px-4 py-2 font-semibold border-b border-border bg-muted/50">
+                                <FileText className="w-4 h-4" />
+                                <span>Post</span>
                             </div>
                             {postResults.map((post) => (
                                 <Link
                                     key={post._id}
                                     href={`/post/${post._id}`}
                                     onClick={handleClick}
-                                    className="block px-4 py-2 hover:bg-gray-100 text-sm"
+                                    className="block px-4 py-2 hover:bg-accent text-sm"
                                 >
                                     {post.title}
                                     {post.author?.username && (
-                                        <span className="text-gray-400 text-xs ml-1"> – {post.author.username}</span>
+                                        <span className="text-muted-foreground text-xs ml-1"> – {post.author.username}</span>
                                     )}
                                 </Link>
                             ))}
@@ -123,7 +126,7 @@ export default function SearchBar() {
                     )}
 
                     {userResults.length === 0 && postResults.length === 0 && (
-                        <div className="px-4 py-2 text-sm text-gray-500">Không tìm thấy kết quả.</div>
+                        <div className="px-4 py-2 text-sm text-muted-foreground">No results found</div>
                     )}
                 </div>
             )}

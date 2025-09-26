@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { useToast } from '../../hooks/useToast';
 
 interface AuthFormProps {
     isLoginMode: boolean;
@@ -9,8 +10,9 @@ interface AuthFormProps {
 export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps) {
     const router = useRouter();
     const [email, setEmail] = useState('');
-    const [username, setUsername] = useState(''); // <-- thêm username
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const { success, error, info } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,16 +34,26 @@ export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps)
         const data = await res.json();
 
         if (res.ok && (data.access_token || data.user)) {
-            // Nếu là đăng ký, backend của bạn chưa trả về token → chuyển đến login
             if (isLoginMode) {
                 localStorage.setItem('token', data.access_token);
+                try {
+                    // fetch current user to get username and store for home greeting
+                    const meRes = await fetch('http://localhost:3000/users/me', {
+                        headers: { Authorization: `Bearer ${data.access_token}` },
+                    });
+                    const me = await meRes.json();
+                    const name = me?.username || me?.email || 'bạn';
+                    localStorage.setItem('greet_name', name);
+                } catch (_) {
+                    localStorage.setItem('greet_name', 'bạn');
+                }
                 router.push('/home');
             } else {
-                alert('Đăng ký thành công, vui lòng đăng nhập!');
+                info('Sign up successful, please login!');
                 setIsLoginMode(true);
             }
         } else {
-            alert(data.message || 'Đăng nhập/Đăng ký thất bại!');
+            error(data.message || 'Login/Sign up failed!');
         }
     };
 
@@ -49,7 +61,7 @@ export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps)
         <div className="flex items-center justify-center p-8 bg-white text-black rounded-l-3xl shadow-xl">
             <div className="w-full max-w-sm">
                 <h2 className="text-2xl font-bold mb-4 text-center">
-                    {isLoginMode ? 'Đăng nhập' : 'Đăng ký'}
+                    {isLoginMode ? 'Login' : 'Sign up'}
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -57,7 +69,7 @@ export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps)
                         <input
                             type="text"
                             required
-                            placeholder="Tên người dùng"
+                            placeholder="Username"
                             className="w-full px-4 py-2 border border-gray-300 rounded"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -74,7 +86,7 @@ export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps)
                     <input
                         type="password"
                         required
-                        placeholder="Mật khẩu"
+                        placeholder="Password"
                         className="w-full px-4 py-2 border border-gray-300 rounded"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -83,17 +95,17 @@ export default function AuthForm({ isLoginMode, setIsLoginMode }: AuthFormProps)
                         type="submit"
                         className="w-full bg-slate-900 text-white py-2 rounded hover:bg-slate-800"
                     >
-                        {isLoginMode ? 'Đăng nhập' : 'Đăng ký'}
+                        {isLoginMode ? 'Login' : 'Sign up'}
                     </button>
                 </form>
 
                 <p className="mt-4 text-center text-sm">
-                    {isLoginMode ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}{' '}
+                    {isLoginMode ? 'Did not have an account yet?' : 'Have an account already?'}{' '}
                     <button
                         onClick={() => setIsLoginMode(!isLoginMode)}
                         className="text-blue-600 hover:underline"
                     >
-                        {isLoginMode ? 'Đăng ký' : 'Đăng nhập'}
+                        {isLoginMode ? 'Sign up' : 'Login'}
                     </button>
                 </p>
             </div>

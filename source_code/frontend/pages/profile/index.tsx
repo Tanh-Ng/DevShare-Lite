@@ -36,25 +36,25 @@ export default function MyProfilePage() {
             .catch((err) => console.error('Error loading posts:', err));
     }, [user]);
 
-    if (loading || !user) return <p className="p-4">Đang tải...</p>;
+    if (loading || !user) return <p className="p-4 text-muted-foreground">Loading...</p>;
 
     return (
-        <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-            <h1 className="text-3xl font-bold">Hồ sơ cá nhân của bạn</h1>
+        <div className="max-w-3xl mx-auto px-4 py-8 space-y-6 text-foreground">
+            <h1 className="text-3xl font-bold">Your personal info</h1>
 
             {/* Thông tin cá nhân */}
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-4 bg-card border border-border rounded-xl p-4">
                 <AvatarUploader
                     avatarUrl={user.avatarUrl || ''}
                     avatarPublicId={user.avatarPublicId}
                     userId={user._id}
                     onUpdated={() => refresh()}
                 />
-                <div>
+                <div className="flex-1">
                     <p className="text-lg font-semibold">{user.username}</p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Đã tham gia: {new Date(user.joined || '').toLocaleDateString()}
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Joined: {new Date(user.joined || '').toLocaleDateString()}
                     </p>
                     <div className="mt-2">
                         <BioEditor
@@ -78,11 +78,11 @@ export default function MyProfilePage() {
 
             {/* Danh sách bài viết */}
             <div className="mt-8 space-y-4">
-                <h2 className="text-2xl font-semibold">Bài viết của bạn</h2>
+                <h2 className="text-2xl font-semibold">Your post</h2>
                 {posts.length > 0 ? (
                     posts.map((post) => <PostCard key={post._id} post={post} />)
                 ) : (
-                    <p className="text-gray-500">Bạn chưa có bài viết nào.</p>
+                    <p className="text-muted-foreground">You dont have any posts</p>
                 )}
             </div>
         </div>

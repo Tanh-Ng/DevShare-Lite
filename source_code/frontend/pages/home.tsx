@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useToast } from '../hooks/useToast';
+import { ToastContainer } from '../components/Toast';
 import PostTabs from '../components/PostTabs';
 import PostCard from '../components/PostCard';
 import { PostCardSkeleton } from '../components/LoadingSkeleton';
@@ -10,9 +12,12 @@ type PostTabType = 'following' | 'latest' | 'recent';
 export default function HomePage() {
   const [selectedTab, setSelectedTab] = useState<PostTabType>('latest');
   const [posts, setPosts] = useState<any[]>([]);
+  const [tagsFilter, setTagsFilter] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { toasts, success, removeToast } = useToast();
 
   const fetchPostsByTab = async (tab: PostTabType) => {
     setLoading(true);
@@ -61,8 +66,22 @@ export default function HomePage() {
     fetchPostsByTab(selectedTab);
   }, [selectedTab]);
 
+  useEffect(() => {
+    // one-time greeting after login
+    const name = localStorage.getItem('greet_name');
+    if (name) {
+      success(`Greetings, ${name}!`);
+      localStorage.removeItem('greet_name');
+    }
+  }, []);
+
+  const filteredPosts = tagsFilter.length === 0
+    ? posts
+    : posts.filter((p) => Array.isArray(p.tags) && p.tags.some((t: string) => tagsFilter.includes(String(t).toLowerCase())));
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <Breadcrumb />
 
       <div className="mb-8">
@@ -73,8 +92,84 @@ export default function HomePage() {
           Discover and share amazing content with the developer community
         </p>
       </div>
+      <div className="flex items-center justify-between gap-3">
+        {/* Tabs bên trái */}
+        <div className="h-10 flex items-center">
+          <PostTabs currentTab={selectedTab} onTabChange={setSelectedTab} />
+        </div>
 
-      <PostTabs currentTab={selectedTab} onTabChange={setSelectedTab} />
+        {/* Input filter bên phải */}
+        <div className="flex items-center w-full sm:w-auto sm:max-w-md">
+          <div className="flex items-center gap-2 w-full h-10 px-3 rounded-lg bg-muted p-1">
+            <div className="flex items-center gap-2 h-full flex-1 px-3 rounded-md border border-border bg-card text-card-foreground ring-offset-background focus-within:ring-2 focus-within:ring-primary/40 transition flex-wrap">
+              {tagsFilter.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded bg-muted text-muted-foreground"
+                >
+                  #{tag}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${tag}`}
+                    className="ml-1 hover:text-foreground"
+                    onClick={() =>
+                      setTagsFilter(tagsFilter.filter((t) => t !== tag))
+                    }
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.includes(',')) {
+                    const parts = value
+                      .split(',')
+                      .map((t) => t.trim())
+                      .filter(Boolean);
+                    if (parts.length) {
+                      setTagsFilter((prev) =>
+                        Array.from(
+                          new Set([...prev, ...parts.map((t) => t.toLowerCase())])
+                        )
+                      );
+                    }
+                    setTagInput('');
+                  } else {
+                    setTagInput(value);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const value = tagInput.trim();
+                    if (value) {
+                      setTagsFilter((prev) =>
+                        prev.includes(value.toLowerCase())
+                          ? prev
+                          : [...prev, value.toLowerCase()]
+                      );
+                      setTagInput('');
+                    }
+                  } else if (
+                    e.key === 'Backspace' &&
+                    tagInput === '' &&
+                    tagsFilter.length > 0
+                  ) {
+                    setTagsFilter((prev) => prev.slice(0, -1));
+                  }
+                }}
+                className="flex-1 min-w-[140px] outline-none bg-transparent text-sm h-full"
+                placeholder="Filter by tags, press Enter or ,"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       <div className="mt-8 space-y-6">
         {loading ? (
@@ -99,7 +194,7 @@ export default function HomePage() {
               Try Again
             </button>
           </div>
-        ) : posts.length === 0 ? (
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
               <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,9 +203,11 @@ export default function HomePage() {
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">No posts found</h3>
             <p className="text-muted-foreground mb-4">
-              {selectedTab === 'following'
-                ? "You're not following anyone yet. Start following some authors to see their posts here."
-                : "Be the first to share something amazing with the community!"
+              {tagsFilter.length > 0 ?
+                'No posts match these tags.' :
+                selectedTab === 'following'
+                  ? "You're not following anyone yet. Start following some authors to see their posts here."
+                  : "Be the first to share something amazing with the community!"
               }
             </p>
             <a
@@ -124,7 +221,7 @@ export default function HomePage() {
             </a>
           </div>
         ) : (
-          posts.map((post) => <PostCard key={post._id} post={post} />)
+          filteredPosts.map((post) => <PostCard key={post._id} post={post} />)
         )}
       </div>
     </div>
