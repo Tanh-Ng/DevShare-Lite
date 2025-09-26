@@ -10,6 +10,8 @@ type Post = {
     _id: string;
     title: string;
     content: string;
+    summary?: string;
+    tags?: string[];
     author?: {
         _id: string;
         username?: string;
@@ -31,6 +33,9 @@ export default function PostCard({ post }: { post: Post }) {
     const [isStarred, setIsStarred] = useState(false);
     const [loadingStar, setLoadingStar] = useState(false);
     const [starCount, setStarCount] = useState(post.starredBy?.length ?? 0);
+
+    const [showSummary, setShowSummary] = useState(false);
+    const [hoverTimer, setHoverTimer] = useState<NodeJS.Timeout | null>(null);
 
     const isAuthorMe = user?._id === post.author?._id;
     const profileLink = isAuthorMe ? '/profile' : `/profile/${post.author?._id}`;
@@ -92,6 +97,12 @@ export default function PostCard({ post }: { post: Post }) {
         }
     };
 
+    useEffect(() => {
+        return () => {
+            if (hoverTimer) clearTimeout(hoverTimer);
+        };
+    }, [hoverTimer]);
+
     // Don't render if post.author is missing
     if (!post.author) {
         return null;
@@ -133,11 +144,43 @@ export default function PostCard({ post }: { post: Post }) {
                     </div>
 
                     {/* Title */}
-                    <Link href={`/post/${post._id}`} className="block group/title">
-                        <h2 className="text-xl font-bold font-heading text-foreground group-hover/title:text-primary transition-colors mb-3 line-clamp-2">
-                            {post.title}
-                        </h2>
-                    </Link>
+                    <div className="relative">
+                        <Link
+                            href={`/post/${post._id}`}
+                            className="block group/title"
+                            onMouseEnter={() => {
+                                if (hoverTimer) clearTimeout(hoverTimer);
+                                const t = setTimeout(() => setShowSummary(true), 3500);
+                                setHoverTimer(t);
+                            }}
+                            onMouseLeave={() => {
+                                if (hoverTimer) clearTimeout(hoverTimer);
+                                setHoverTimer(null);
+                                setShowSummary(false);
+                            }}
+                        >
+                            <h2 className="text-xl font-bold font-heading text-foreground group-hover/title:text-primary transition-colors mb-3 line-clamp-2">
+                                {post.title}
+                            </h2>
+                        </Link>
+                        {showSummary && post.summary && (
+                            <div className="absolute z-20 mt-1 max-w-md w-[28rem] p-3 rounded-lg shadow-lg border border-border bg-popover text-popover-foreground">
+                                <p className="text-sm leading-snug">
+                                    {post.summary}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {post.tags && post.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {post.tags.map((tag) => (
+                                <span key={tag} className="px-2 py-0.5 text-xs rounded bg-muted text-muted-foreground">
+                                    #{tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Preview */}
                     <div className="text-muted-foreground text-sm line-clamp-3 mb-4 prose prose-sm max-w-none prose-headings:font-heading prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-primary prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded">
