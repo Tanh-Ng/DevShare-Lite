@@ -29,13 +29,13 @@ export default function PostPreview({
             })
                 .then((res) => res.json())
                 .then((data) => setUser(data))
-                .catch((err) => console.error('Lỗi khi lấy user:', err));
+                .catch((err) => console.error('An error occurred', err));
         }
     }, []);
 
     return (
         <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Xem trước</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Preview</h2>
             <div className="flex items-start justify-between border p-4 rounded-xl shadow-md gap-6">
                 {/* Bên trái: nội dung bài viết */}
                 <div className="flex-1">
@@ -50,18 +50,18 @@ export default function PostPreview({
                         ) : (
                             <div className="w-6 h-6 rounded-full bg-gray-300" />
                         )}
-                        <span>{user?.username || 'Bạn'}</span>
+                        <span>{user?.username || 'You'}</span>
                         <span>• {formattedDate || '...'}</span>
                     </div>
 
                     {/* Tiêu đề */}
                     <h3 className="text-xl font-bold text-gray-900 mb-1">
-                        {title || 'Tiêu đề...'}
+                        {title || 'Title ...'}
                     </h3>
 
                     {/* Tóm tắt markdown */}
                     <div className="text-gray-700 text-sm line-clamp-2 mb-2">
-                        <ReactMarkdown>{content || 'Tóm tắt bài viết...'}</ReactMarkdown>
+                        <ReactMarkdown>{content || 'Summary...'}</ReactMarkdown>
                     </div>
 
                     {/* Metadata */}
