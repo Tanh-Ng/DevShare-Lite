@@ -11,10 +11,10 @@ export class PostsController {
   @HttpPost()
   async createPost(
     @Req() req: Request,
-    @Body() body: { title: string; content: string; coverImage?: string }
+    @Body() body: { title: string; content: string; coverImage?: string; summary?: string; tags?: string[] }
   ) {
     const user = req.user as any;
-    return this.postsService.createPost(body.title, body.content, user.userId, body.coverImage);
+    return this.postsService.createPost(body.title, body.content, user.userId, body.coverImage, body.summary, body.tags);
   }
 
   @Get('search')
@@ -42,6 +42,13 @@ export class PostsController {
   @Get(':id')
   getPost(@Param('id') id: string) {
     return this.postsService.getPostById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/view')
+  async incrementView(@Param('id') id: string, @Req() req: Request) {
+    const user = req.user as any;
+    return this.postsService.incrementView(id, user?.userId);
   }
 
   @Get('by-author/:authorId')
@@ -74,10 +81,10 @@ export class PostsController {
   async updatePost(
     @Param('id') id: string,
     @Req() req: Request,
-    @Body() body: { title?: string; content?: string; coverImage?: string }
+    @Body() body: { title?: string; content?: string; coverImage?: string; summary?: string; tags?: string[] }
   ) {
     const user = req.user as any;
-    return this.postsService.updatePost(id, user.userId, body.title, body.content, body.coverImage);
+    return this.postsService.updatePost(id, user.userId, body.title, body.content, body.coverImage, body.summary, body.tags);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,13 +1,23 @@
-import { Body, Controller, Get, Param, UseGuards, Req, Post, Put, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, UseGuards, Req, Post as HttpPost, Put, Patch, Query } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
 import { JwtAuthGuard } from '../strategies/jwt-auth.guard';
 import { Request } from 'express';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Post as PostSchema } from '../schemas/post.schema';
+import { Comment as CommentSchema } from '../schemas/comment.schema';
+import type { Post as PostType } from '../schemas/post.schema';
+import type { Comment as CommentType } from '../schemas/comment.schema';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(
+    private usersService: UsersService,
+    @InjectModel(PostSchema.name) private postModel: Model<PostType>,
+    @InjectModel(CommentSchema.name) private commentModel: Model<CommentType>,
+  ) { }
 
-  @Post('register')
+  @HttpPost('register')
   async register(@Body() body: { email: string; password: string; username?: string }) {
     const existing = await this.usersService.findByEmail(body.email);
     if (existing) {
@@ -131,7 +141,41 @@ export class UsersController {
   }
 
 
+  @UseGuards(JwtAuthGuard)
+  @Get('me/notifications')
+  async getNotifications(@Req() req: Request) {
+    const user = req.user as any;
+    const userId = new Types.ObjectId(user.userId);
 
+    const me = await this.usersService.findById(user.userId);
+    const followerCount = me?.followers?.length || 0;
+
+    const myPosts = await this.postModel.find({ author: userId }).select('_id title likes createdAt');
+    const likeSummary = myPosts
+      .map(p => ({ postId: p._id, title: p.title, count: (p.likes || []).length }))
+      .filter(item => item.count > 0);
+
+    const comments = await this.commentModel.find({ post: { $in: myPosts.map(p => p._id) } })
+      .populate('author', 'username avatarUrl')
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    const commentMap = new Map<string, { postId: string; title: string; count: number; latestBy?: any }>();
+    for (const c of comments as any[]) {
+      const pid = c.post.toString();
+      const postTitle = myPosts.find((p: any) => (p._id as any).equals(c.post))?.title || 'Bài viết của bạn';
+      const entry = commentMap.get(pid) || { postId: pid, title: postTitle, count: 0, latestBy: undefined };
+      entry.count += 1;
+      if (!entry.latestBy) entry.latestBy = c.author;
+      commentMap.set(pid, entry);
+    }
+
+    return {
+      followers: followerCount,
+      likes: likeSummary,
+      comments: Array.from(commentMap.values()),
+    };
+  }
 }
 
 

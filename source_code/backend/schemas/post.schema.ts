@@ -10,6 +10,12 @@ export class Post extends Document {
   @Prop({ required: true })
   content: string;
 
+  @Prop({ default: '' })
+  summary?: string;
+
+  @Prop({ type: [String], default: [] })
+  tags: string[];
+
   @Prop()
   coverImage?: string;
 
