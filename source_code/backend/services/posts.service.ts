@@ -9,12 +9,14 @@ export class PostsService {
   constructor(@InjectModel(Post.name) private postModel: Model<Post>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,) { }
 
-  async createPost(title: string, content: string, authorId: string, coverImage?: string) {
+  async createPost(title: string, content: string, authorId: string, coverImage?: string, summary?: string, tags?: string[]) {
     return this.postModel.create({
       title,
       content,
       author: new Types.ObjectId(authorId),
-      coverImage
+      coverImage,
+      summary,
+      tags: Array.isArray(tags) ? tags : []
 
     });
   }
@@ -121,6 +123,8 @@ export class PostsService {
     title?: string,
     content?: string,
     coverImage?: string,
+    summary?: string,
+    tags?: string[],
   ) {
     const post = await this.postModel.findById(postId);
 
@@ -135,6 +139,8 @@ export class PostsService {
     if (title !== undefined) post.title = title;
     if (content !== undefined) post.content = content;
     if (coverImage !== undefined) post.coverImage = coverImage;
+    if (summary !== undefined) post.summary = summary;
+    if (tags !== undefined) post.tags = Array.isArray(tags) ? tags : [];
 
     return await post.save();
   }
@@ -160,4 +166,15 @@ export class PostsService {
     return this.postModel.findByIdAndDelete(postId);
   }
 
+  async incrementView(postId: string, viewerUserId?: string) {
+    const post = await this.postModel.findById(postId);
+    if (!post) throw new NotFoundException('Bài viết không tồn tại');
+
+    if (viewerUserId && post.author.toString() === viewerUserId) {
+      return post; // do not increment self view
+    }
+
+    await this.postModel.updateOne({ _id: post._id }, { $inc: { views: 1 } });
+    return this.postModel.findById(postId).select('_id views');
+  }
 }
